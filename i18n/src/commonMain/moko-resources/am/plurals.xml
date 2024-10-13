@@ -9,7 +9,7 @@
         <item quantity="other">ከ %1$s ደቂቃዎች በኋላ</item>
     </plurals>
     <plurals name="restore_completed_message">
-        <item quantity="one">ከ %2$s ስህተት ጋር በ %1$s ውስጥ ተከናውኗል</item>
+        <item quantity="one">ከ %2$s ስህተት ጋርa በ %1$s ውስጥ ተከናውኗል</item>
         <item quantity="other">ከ %2$s ስህተት ጋር በ %1$s ውስጥ ተከናውኗል</item>
     </plurals>
 </resources>
