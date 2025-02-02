@@ -43,7 +43,7 @@ class WebViewScreenModel(
     }
 
     fun openInBrowser(context: Context, url: String) {
-        context.openInBrowser(url, forceDefaultBrowser = true)
+        context.openInBrowser(url, forceBrowser = true)
     }
 
     fun clearCookies(url: String) {

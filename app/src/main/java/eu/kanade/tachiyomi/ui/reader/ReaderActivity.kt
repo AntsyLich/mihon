@@ -577,9 +577,7 @@ class ReaderActivity : BaseActivity() {
     }
 
     private fun openChapterInBrowser() {
-        assistUrl?.let {
-            openInBrowser(it.toUri(), forceDefaultBrowser = false)
-        }
+        assistUrl?.let { openInBrowser(it.toUri(), forceBrowser = false) }
     }
 
     private fun shareChapter() {

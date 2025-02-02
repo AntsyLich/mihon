@@ -109,7 +109,7 @@ class WebViewActivity : BaseActivity() {
     }
 
     private fun openInBrowser(url: String) {
-        openInBrowser(url, forceDefaultBrowser = true)
+        openInBrowser(url, forceBrowser = true)
     }
 
     private fun clearCookies(url: String) {

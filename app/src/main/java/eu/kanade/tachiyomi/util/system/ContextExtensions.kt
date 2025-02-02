@@ -5,6 +5,7 @@ import android.content.ClipboardManager
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.content.pm.ResolveInfo
 import android.content.res.Configuration
 import android.net.Uri
 import android.os.Build
@@ -57,37 +58,70 @@ fun Context.copyToClipboard(label: String, content: String) {
 val Context.powerManager: PowerManager
     get() = getSystemService()!!
 
-fun Context.openInBrowser(url: String, forceDefaultBrowser: Boolean = false) {
-    this.openInBrowser(url.toUri(), forceDefaultBrowser)
+fun Context.openInBrowser(url: String, forceBrowser: Boolean = false) {
+    this.openInBrowser(url.toUri(), forceBrowser)
 }
 
-fun Context.openInBrowser(uri: Uri, forceDefaultBrowser: Boolean = false) {
-    try {
-        val intent = Intent(Intent.ACTION_VIEW, uri).apply {
-            // Force default browser so that verified extensions don't re-open Tachiyomi
-            if (forceDefaultBrowser) {
-                defaultBrowserPackageName()?.let { setPackage(it) }
+private object ContextExtensions
+
+fun Context.openInBrowser(uri: Uri, forceBrowser: Boolean = false) {
+    if (!forceBrowser) {
+        runCatching { Intent(Intent.ACTION_VIEW, uri).let(::startActivity) }
+            .onFailure {
+                ContextExtensions.logcat(LogPriority.ERROR, it)
+                toast(it.message)
             }
-        }
-        startActivity(intent)
-    } catch (e: Exception) {
-        toast(e.message)
+        return
     }
+
+    val httpIntent = Intent(Intent.ACTION_VIEW, "http://".toUri())
+    val defaultResolveInfo = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+        val flags = PackageManager.ResolveInfoFlags.of(PackageManager.MATCH_DEFAULT_ONLY.toLong())
+        packageManager.resolveActivity(httpIntent, flags)
+    } else {
+        packageManager.resolveActivity(httpIntent, PackageManager.MATCH_DEFAULT_ONLY)
+    }
+    if (defaultResolveInfo?.isOwnOrShareSheet(this) == false) {
+        runCatching {
+            Intent(Intent.ACTION_VIEW, uri)
+                .setPackage(defaultResolveInfo.activityInfo.packageName)
+                .let(::startActivity)
+        }
+            .onFailure {
+                ContextExtensions.logcat(LogPriority.ERROR, it)
+                toast(it.message)
+            }
+        return
+    }
+
+    // We weren't able to find a default browser so prompt the user to choose
+    val intents = packageManager.queryIntentActivities(httpIntent, 0).mapNotNull {
+        if (it.isOwnOrShareSheet(this)) return@mapNotNull null
+
+        Intent(Intent.ACTION_VIEW, uri).setPackage(it.activityInfo.packageName)
+    }
+        .toMutableList()
+
+    if (intents.isEmpty()) {
+        toast(MR.strings.no_browser_error)
+        return
+    }
+
+    Intent.createChooser(intents.removeAt(0), null)
+        .putExtra(Intent.EXTRA_INITIAL_INTENTS, intents.toTypedArray())
+        .let { startActivity(it) }
 }
 
-private fun Context.defaultBrowserPackageName(): String? {
-    val browserIntent = Intent(Intent.ACTION_VIEW, "http://".toUri())
-    val resolveInfo = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-        packageManager.resolveActivity(
-            browserIntent,
-            PackageManager.ResolveInfoFlags.of(PackageManager.MATCH_DEFAULT_ONLY.toLong()),
-        )
-    } else {
-        packageManager.resolveActivity(browserIntent, PackageManager.MATCH_DEFAULT_ONLY)
-    }
-    return resolveInfo
-        ?.activityInfo?.packageName
-        ?.takeUnless { it in DeviceUtil.invalidDefaultBrowsers }
+private fun ResolveInfo.isOwnOrShareSheet(context: Context): Boolean {
+    return activityInfo.packageName.equals(context.packageName) ||
+        /**
+         * - com.android.internal.app.ResolverActivity (Default unless changed by Vendor e.g. below ones)
+         * - com.hihonor.android.internal.app.HwResolverActivity (Honor MagicOS/Magic UI)
+         * - com.huawei.android.internal.app.HwResolverActivity (Huawei EMUI)
+         * - com.transsion.resolver.ResolverActivity (Infinix XOS)
+         * - com.zui.resolver.ResolverActivity (Lenovo ZUI)
+         */
+        activityInfo.name.endsWith("ResolverActivity")
 }
 
 fun Context.createFileInCacheDir(name: String): File {
