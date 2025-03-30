@@ -49,7 +49,6 @@ fun Manga.toMangaUpdate(): MangaUpdate {
         thumbnailUrl = thumbnailUrl,
         updateStrategy = updateStrategy,
         initialized = initialized,
-        version = version,
         notes = notes,
     )
 }

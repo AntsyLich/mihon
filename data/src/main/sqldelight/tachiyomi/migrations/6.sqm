@@ -1,9 +1,56 @@
+import eu.kanade.tachiyomi.source.model.UpdateStrategy;
+import kotlin.Boolean;
+import kotlin.String;
+import kotlin.collections.List;
+
+DROP VIEW historyView;
 DROP VIEW libraryView;
+DROP VIEW updatesView;
 
+DROP INDEX library_favorite_index;
+DROP INDEX mangas_url_index;
+
+DROP TRIGGER update_last_favorited_at_mangas;
+DROP TRIGGER update_last_modified_at_mangas;
+DROP TRIGGER update_manga_version;
 DROP TRIGGER insert_manga_category_update_version;
+DROP TRIGGER update_chapter_and_manga_version;
 
+ALTER TABLE mangas RENAME TO manga_temp;
 ALTER TABLE mangas_categories RENAME TO manga_category_temp;
 ALTER TABLE sources RENAME TO source_temp;
+
+CREATE TABLE manga(
+    id INTEGER NOT NULL PRIMARY KEY,
+
+    -- source_id refers to the associated source for the manga
+    -- whereas other source_* fields are metadata provided by the source
+    source_id INTEGER NOT NULL,
+    source_url TEXT NOT NULL,
+    source_title TEXT NOT NULL,
+    source_author TEXT,
+    source_artist TEXT,
+    source_description TEXT,
+    source_genre TEXT AS List<String>,
+    source_status INTEGER NOT NULL,
+    source_cover TEXT,
+    source_update_strategy INTEGER AS UpdateStrategy NOT NULL DEFAULT 0,
+
+    chapter_last_update INTEGER,
+    chapter_next_update INTEGER,
+
+    user_favorite INTEGER AS Boolean NOT NULL,
+    user_notes TEXT NOT NULL DEFAULT "",
+    user_reader_flags INTEGER NOT NULL,
+    user_chapter_flags INTEGER NOT NULL,
+
+    cover_last_modified INTEGER NOT NULL,
+    calculate_interval INTEGER DEFAULT 0 NOT NULL,
+    date_added INTEGER NOT NULL,
+    initialized INTEGER AS Boolean NOT NULL,
+
+    UNIQUE(source_id, source_url)
+);
 
 CREATE TABLE manga_category(
     manga_id INTEGER NOT NULL,
@@ -11,7 +58,7 @@ CREATE TABLE manga_category(
     UNIQUE(manga_id, category_id) ON CONFLICT IGNORE,
     FOREIGN KEY(category_id) REFERENCES categories(_id)
     ON DELETE CASCADE,
-    FOREIGN KEY(manga_id) REFERENCES mangas(_id)
+    FOREIGN KEY(manga_id) REFERENCES manga(id)
     ON DELETE CASCADE
 );
 
@@ -21,6 +68,13 @@ CREATE TABLE source(
     language TEXT NOT NULL
 );
 
+INSERT INTO manga
+SELECT
+    _id, source, url, title, author, artist, description, genre, status, thumbnail_url, update_strategy,
+    last_update, next_update, favorite, notes, viewer, chapter_flags, cover_last_modified,
+    calculate_interval, date_added, initialized
+FROM manga_temp
+
 INSERT INTO manga_category
 SELECT manga_id, category_id
 FROM manga_category_temp;
@@ -28,6 +82,34 @@ FROM manga_category_temp;
 INSERT INTO source
 SELECT _id, name, lang
 FROM source_temp;
+
+CREATE VIEW historyView AS
+SELECT
+    history._id AS id,
+    manga.id AS mangaId,
+    chapters._id AS chapterId,
+    manga.source_title AS title,
+    manga.source_cover AS thumbnailUrl,
+    manga.source_id AS source,
+    manga.user_favorite AS favorite,
+    manga.cover_last_modified,
+    chapters.chapter_number AS chapterNumber,
+    history.last_read AS readAt,
+    history.time_read AS readDuration,
+    max_last_read.last_read AS maxReadAt,
+    max_last_read.chapter_id AS maxReadAtChapterId
+FROM manga
+JOIN chapters
+ON manga.id = chapters.manga_id
+JOIN history
+ON chapters._id = history.chapter_id
+JOIN (
+    SELECT chapters.manga_id,chapters._id AS chapter_id, MAX(history.last_read) AS last_read
+    FROM chapters JOIN history
+    ON chapters._id = history.chapter_id
+    GROUP BY chapters.manga_id
+) AS max_last_read
+ON chapters.manga_id = max_last_read.manga_id;
 
 CREATE VIEW libraryView AS
 SELECT
@@ -39,7 +121,7 @@ SELECT
     coalesce(C.lastRead, 0) AS lastRead,
     coalesce(C.bookmarkCount, 0) AS bookmarkCount,
     coalesce(MC.category_id, 0) AS category
-FROM mangas M
+FROM manga M
 LEFT JOIN(
     SELECT
         chapters.manga_id,
@@ -58,10 +140,33 @@ LEFT JOIN(
     WHERE excluded_scanlators.scanlator IS NULL
     GROUP BY chapters.manga_id
 ) AS C
-ON M._id = C.manga_id
+ON M.id = C.manga_id
 LEFT JOIN manga_category AS MC
-ON MC.manga_id = M._id
-WHERE M.favorite = 1;
+ON MC.manga_id = M.id
+WHERE M.user_favorite = 1;
 
+CREATE VIEW updatesView AS
+SELECT
+    manga.id AS mangaId,
+    manga.source_title AS mangaTitle,
+    chapters._id AS chapterId,
+    chapters.name AS chapterName,
+    chapters.scanlator,
+    chapters.read,
+    chapters.bookmark,
+    chapters.last_page_read,
+    manga.source_id AS source,
+    manga.user_favorite AS favorite,
+    manga.source_cover AS thumbnailUrl,
+    manga.cover_last_modified AS coverLastModified,
+    chapters.date_upload AS dateUpload,
+    chapters.date_fetch AS datefetch
+FROM manga JOIN chapters
+ON manga.id = chapters.manga_id
+WHERE user_favorite = 1
+AND date_fetch > date_added
+ORDER BY date_fetch DESC;
+
+DROP TABLE manga_temp;
 DROP TABLE manga_category_temp;
 DROP TABLE source_temp;

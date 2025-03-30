@@ -96,8 +96,5 @@ private fun Manga.toBackupManga() =
         viewer_flags = this.viewerFlags.toInt(),
         chapterFlags = this.chapterFlags.toInt(),
         updateStrategy = this.updateStrategy,
-        lastModifiedAt = this.lastModifiedAt,
-        favoriteModifiedAt = this.favoriteModifiedAt,
-        version = this.version,
         notes = this.notes,
     )

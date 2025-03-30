@@ -7,6 +7,7 @@ import eu.kanade.tachiyomi.data.backup.models.BackupHistory
 import eu.kanade.tachiyomi.data.backup.models.BackupManga
 import eu.kanade.tachiyomi.data.backup.models.BackupTracking
 import tachiyomi.data.DatabaseHandler
+import tachiyomi.data.StringListColumnAdapter
 import tachiyomi.data.UpdateStrategyColumnAdapter
 import tachiyomi.domain.category.interactor.GetCategories
 import tachiyomi.domain.chapter.interactor.GetChaptersByMangaId
@@ -43,14 +44,12 @@ class MangaRestorer(
     }
 
     suspend fun sortByNew(backupMangas: List<BackupManga>): List<BackupManga> {
-        val urlsBySource = handler.awaitList { mangasQueries.getAllMangaSourceAndUrl() }
+        val urlsBySource = handler.awaitList { mangaQueries.getAllSourceAndUrl() }
             .groupBy({ it.source }, { it.url })
 
-        return backupMangas
-            .sortedWith(
-                compareBy<BackupManga> { it.url in urlsBySource[it.source].orEmpty() }
-                    .then(compareByDescending { it.lastModifiedAt }),
-            )
+        return backupMangas.sortedWith(
+            compareBy { it.url in urlsBySource[it.source].orEmpty() }
+        )
     }
 
     suspend fun restore(
@@ -83,11 +82,12 @@ class MangaRestorer(
     }
 
     private suspend fun restoreExistingManga(manga: Manga, dbManga: Manga): Manga {
-        return if (manga.version > dbManga.version) {
-            updateManga(dbManga.copyFrom(manga).copy(id = dbManga.id))
-        } else {
-            updateManga(manga.copyFrom(dbManga).copy(id = dbManga.id))
-        }
+//         return if (manga.version > dbManga.version) {
+//            updateManga(dbManga.copyFrom(manga).copy(id = dbManga.id))
+//         } else {
+//             updateManga(manga.copyFrom(dbManga).copy(id = dbManga.id))
+//         }
+        return updateManga(dbManga.copyFrom(manga).copy(id = dbManga.id))
     }
 
     private fun Manga.copyFrom(newer: Manga): Manga {
@@ -100,36 +100,33 @@ class MangaRestorer(
             thumbnailUrl = newer.thumbnailUrl,
             status = newer.status,
             initialized = this.initialized || newer.initialized,
-            version = newer.version,
         )
     }
 
     private suspend fun updateManga(manga: Manga): Manga {
         handler.await(true) {
-            mangasQueries.update(
-                source = manga.source,
-                url = manga.url,
-                artist = manga.artist,
-                author = manga.author,
-                description = manga.description,
-                genre = manga.genre?.joinToString(separator = ", "),
-                title = manga.title,
-                status = manga.status,
-                thumbnailUrl = manga.thumbnailUrl,
-                favorite = manga.favorite,
-                lastUpdate = manga.lastUpdate,
-                nextUpdate = null,
+            mangaQueries.update(
+                sourceId = manga.source,
+                sourceUrl = manga.url,
+                sourceArtist = manga.artist,
+                sourceAuthor = manga.author,
+                sourceDescription = manga.description,
+                sourceGenre = manga.genre?.let(StringListColumnAdapter::encode),
+                sourceTitle = manga.title,
+                sourceStatus = manga.status,
+                sourceCover = manga.thumbnailUrl,
+                userFavorite = manga.favorite,
+                chapterLastUpdate = manga.lastUpdate,
+                chapterNextUpdate = null,
                 calculateInterval = null,
                 initialized = manga.initialized,
-                viewer = manga.viewerFlags,
-                chapterFlags = manga.chapterFlags,
+                userReaderFlags = manga.viewerFlags,
+                userChapterFlags = manga.chapterFlags,
                 coverLastModified = manga.coverLastModified,
                 dateAdded = manga.dateAdded,
                 mangaId = manga.id,
-                updateStrategy = manga.updateStrategy.let(UpdateStrategyColumnAdapter::encode),
-                version = manga.version,
-                isSyncing = 1,
-                notes = manga.notes,
+                sourceUpdateStrategy = manga.updateStrategy.let(UpdateStrategyColumnAdapter::encode),
+                userNotes = manga.notes
             )
         }
         return manga
@@ -141,7 +138,6 @@ class MangaRestorer(
         return manga.copy(
             initialized = manga.description != null,
             id = insertManga(manga),
-            version = manga.version,
         )
     }
 
@@ -241,29 +237,29 @@ class MangaRestorer(
      */
     private suspend fun insertManga(manga: Manga): Long {
         return handler.awaitOneExecutable(true) {
-            mangasQueries.insert(
-                source = manga.source,
-                url = manga.url,
-                artist = manga.artist,
-                author = manga.author,
-                description = manga.description,
-                genre = manga.genre,
-                title = manga.title,
-                status = manga.status,
-                thumbnailUrl = manga.thumbnailUrl,
-                favorite = manga.favorite,
-                lastUpdate = manga.lastUpdate,
-                nextUpdate = 0L,
-                calculateInterval = 0L,
+            mangaQueries.insert(
+                sourceId = manga.source,
+                sourceUrl = manga.url,
+                sourceArtist = manga.artist,
+                sourceAuthor = manga.author,
+                sourceDescription = manga.description,
+                sourceGenre = manga.genre,
+                sourceTitle = manga.title,
+                sourceStatus = manga.status,
+                sourceCover = manga.thumbnailUrl,
+                userFavorite = manga.favorite,
+                chapterLastUpdate = manga.lastUpdate,
+                chapterNextUpdate = 0,
+                calculateInterval = 0,
                 initialized = manga.initialized,
-                viewerFlags = manga.viewerFlags,
-                chapterFlags = manga.chapterFlags,
+                userReaderFlags = manga.viewerFlags,
+                userChapterFlags = manga.chapterFlags,
                 coverLastModified = manga.coverLastModified,
                 dateAdded = manga.dateAdded,
-                updateStrategy = manga.updateStrategy,
-                version = manga.version,
+                sourceUpdateStrategy = manga.updateStrategy,
+                userNotes = manga.notes,
             )
-            mangasQueries.selectLastInsertedRowId()
+            mangaQueries.selectLastInsertedRowId()
         }
     }
 

@@ -1,0 +1,157 @@
+import eu.kanade.tachiyomi.source.model.UpdateStrategy;
+import kotlin.collections.List;
+import kotlin.Boolean;
+import kotlin.String;
+
+CREATE TABLE manga(
+    id INTEGER NOT NULL PRIMARY KEY,
+
+    -- source_id refers to the associated source for the manga
+    -- whereas other source_* fields are metadata provided by the source
+    source_id INTEGER NOT NULL,
+    source_url TEXT NOT NULL,
+    source_title TEXT NOT NULL,
+    source_author TEXT,
+    source_artist TEXT,
+    source_description TEXT,
+    source_genre TEXT AS List<String>,
+    source_status INTEGER NOT NULL,
+    source_cover TEXT,
+    source_update_strategy INTEGER AS UpdateStrategy NOT NULL DEFAULT 0,
+
+    chapter_last_update INTEGER,
+    chapter_next_update INTEGER,
+
+    user_favorite INTEGER AS Boolean NOT NULL,
+    user_notes TEXT NOT NULL DEFAULT "",
+    user_reader_flags INTEGER NOT NULL,
+    user_chapter_flags INTEGER NOT NULL,
+
+    cover_last_modified INTEGER NOT NULL,
+    calculate_interval INTEGER DEFAULT 0 NOT NULL,
+    date_added INTEGER NOT NULL,
+    initialized INTEGER AS Boolean NOT NULL,
+
+    UNIQUE(source_id, source_url)
+);
+
+CREATE INDEX library_favorite_index ON manga(user_favorite) WHERE user_favorite = 1;
+CREATE INDEX mangas_url_index ON manga(source_url);
+
+get:
+SELECT *
+FROM manga
+WHERE id = :id;
+
+getForSourceAndUrl:
+SELECT *
+FROM manga
+WHERE source_id = :source
+AND source_url = :url;
+
+getFavorites:
+SELECT *
+FROM manga
+WHERE user_favorite = 1;
+
+getNonLibraryReadManga:
+SELECT *
+FROM manga
+WHERE user_favorite = 0 AND id IN (
+    SELECT DISTINCT chapters.manga_id
+    FROM chapters
+    WHERE read = 1 OR last_page_read != 0
+);
+
+getAll:
+SELECT *
+FROM manga;
+
+getAllSourceAndUrl:
+SELECT
+    source_id AS source,
+    source_url AS url
+FROM manga;
+
+getSourceWithLibraryMangaCount:
+SELECT source_id, count(*)
+FROM manga
+WHERE user_favorite = 1
+GROUP BY source_id;
+
+getLibraryMangaBySource:
+SELECT *
+FROM manga
+WHERE user_favorite = 1
+AND source_id = :sourceId;
+
+getDuplicateLibraryManga:
+SELECT *
+FROM manga
+WHERE user_favorite = 1
+AND LOWER(source_title) = :title
+AND id != :id;
+
+getLibraryMangaWithUpcomingChapterUpdate:
+SELECT *
+FROM manga
+WHERE chapter_next_update >= :startOfDay
+AND user_favorite = 1
+AND source_status IN :statuses
+ORDER BY chapter_next_update ASC;
+
+resetReaderFlags:
+UPDATE manga
+SET user_reader_flags = 0;
+
+getSourceWithNonLibraryMangaCount:
+SELECT source_id, count(*)
+FROM manga
+WHERE user_favorite = 0
+GROUP BY source_id;
+
+deleteNonLibraryMangaForSources:
+DELETE FROM manga
+WHERE user_favorite = 0
+AND source_id IN :sourceIds;
+
+insert:
+INSERT INTO manga(
+    source_id, source_url, source_title, source_author, source_artist, source_description, source_genre,
+    source_status, source_cover, source_update_strategy, chapter_last_update, chapter_next_update,
+    user_favorite, user_notes, user_reader_flags, user_chapter_flags, cover_last_modified, calculate_interval,
+    date_added, initialized
+)
+VALUES (
+    :sourceId, :sourceUrl, :sourceTitle, :sourceAuthor, :sourceArtist, :sourceDescription, :sourceGenre,
+    :sourceStatus, :sourceCover, :sourceUpdateStrategy, :chapterLastUpdate, :chapterNextUpdate,
+    :userFavorite, :userNotes, :userReaderFlags, :userChapterFlags, :coverLastModified, :calculateInterval,
+    :dateAdded, :initialized
+);
+
+update:
+UPDATE manga SET
+    source_id = coalesce(:sourceId, source_id),
+    source_url = coalesce(:sourceUrl, source_url),
+    source_artist = coalesce(:sourceArtist, source_artist),
+    source_author = coalesce(:sourceAuthor, source_author),
+    source_description = coalesce(:sourceDescription, source_description),
+    source_genre = coalesce(:sourceGenre, source_genre),
+    source_title = coalesce(:sourceTitle, source_title),
+    source_status = coalesce(:sourceStatus, source_status),
+    source_cover = coalesce(:sourceCover, source_cover),
+    user_favorite = coalesce(:userFavorite, user_favorite),
+    chapter_last_update = coalesce(:chapterLastUpdate, chapter_last_update),
+    chapter_next_update = coalesce(:chapterNextUpdate, chapter_next_update),
+    initialized = coalesce(:initialized, initialized),
+    user_reader_flags = coalesce(:userReaderFlags, user_reader_flags),
+    user_chapter_flags = coalesce(:userChapterFlags, user_chapter_flags),
+    cover_last_modified = coalesce(:coverLastModified, cover_last_modified),
+    date_added = coalesce(:dateAdded, date_added),
+    source_update_strategy = coalesce(:sourceUpdateStrategy, source_update_strategy),
+    calculate_interval = coalesce(:calculateInterval, calculate_interval),
+    user_notes = coalesce(:userNotes, user_notes)
+WHERE id = :mangaId;
+
+selectLastInsertedRowId:
+SELECT last_insert_rowid();
