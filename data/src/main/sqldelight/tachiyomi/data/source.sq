@@ -1,0 +1,19 @@
+CREATE TABLE source(
+    id INTEGER NOT NULL PRIMARY KEY,
+    name TEXT NOT NULL,
+    language TEXT NOT NULL
+);
+
+getAll:
+SELECT *
+FROM source;
+
+upsert:
+INSERT INTO source(id, name, language)
+VALUES (:id, :name, :language)
+ON CONFLICT(id)
+DO UPDATE
+SET
+    name = :name,
+    language = :language
+WHERE id = :id;

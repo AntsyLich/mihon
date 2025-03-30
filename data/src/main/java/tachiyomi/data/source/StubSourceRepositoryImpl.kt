@@ -10,20 +10,14 @@ class StubSourceRepositoryImpl(
 ) : StubSourceRepository {
 
     override fun subscribeAll(): Flow<List<StubSource>> {
-        return handler.subscribeToList { sourcesQueries.findAll(::mapStubSource) }
+        return handler.subscribeToList {
+            sourceQueries.getAll { id, name, language ->
+                StubSource(id = id, lang = language, name = name)
+            }
+        }
     }
 
-    override suspend fun getStubSource(id: Long): StubSource? {
-        return handler.awaitOneOrNull { sourcesQueries.findOne(id, ::mapStubSource) }
+    override suspend fun upsert(id: Long, name: String, language: String) {
+        handler.await { sourceQueries.upsert(id, name, name) }
     }
-
-    override suspend fun upsertStubSource(id: Long, lang: String, name: String) {
-        handler.await { sourcesQueries.upsert(id, lang, name) }
-    }
-
-    private fun mapStubSource(
-        id: Long,
-        lang: String,
-        name: String,
-    ): StubSource = StubSource(id = id, lang = lang, name = name)
 }

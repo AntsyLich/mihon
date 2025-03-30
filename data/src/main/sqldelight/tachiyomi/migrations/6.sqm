@@ -1,0 +1,13 @@
+ALTER TABLE sources RENAME TO source_temp;
+
+CREATE TABLE source(
+    id INTEGER NOT NULL PRIMARY KEY,
+    name TEXT NOT NULL,
+    language TEXT NOT NULL
+);
+
+INSERT INTO source
+SELECT _id, name, lang
+FROM source_temp;
+
+DROP TABLE source_temp;

@@ -14,7 +14,6 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking
 import tachiyomi.domain.source.model.StubSource
 import tachiyomi.domain.source.repository.StubSourceRepository
 import tachiyomi.domain.source.service.SourceManager
@@ -27,7 +26,7 @@ import java.util.concurrent.ConcurrentHashMap
 class AndroidSourceManager(
     private val context: Context,
     private val extensionManager: ExtensionManager,
-    private val sourceRepository: StubSourceRepository,
+    private val stubSourceRepository: StubSourceRepository,
 ) : SourceManager {
 
     private val _isInitialized = MutableStateFlow(false)
@@ -70,13 +69,9 @@ class AndroidSourceManager(
         }
 
         scope.launch {
-            sourceRepository.subscribeAll()
-                .collectLatest { sources ->
-                    val mutableMap = stubSourcesMap.toMutableMap()
-                    sources.forEach {
-                        mutableMap[it.id] = it
-                    }
-                }
+            stubSourceRepository.subscribeAll().collectLatest { sources ->
+                sources.forEach { stubSourcesMap[it.id] = it }
+            }
         }
     }
 
@@ -85,9 +80,7 @@ class AndroidSourceManager(
     }
 
     override fun getOrStub(sourceKey: Long): Source {
-        return sourcesMapFlow.value[sourceKey] ?: stubSourcesMap.getOrPut(sourceKey) {
-            runBlocking { createStubSource(sourceKey) }
-        }
+        return sourcesMapFlow.value[sourceKey] ?: stubSourcesMap.getOrPut(sourceKey) { createStubSource(sourceKey) }
     }
 
     override fun getOnlineSources() = sourcesMapFlow.value.values.filterIsInstance<HttpSource>()
@@ -101,23 +94,22 @@ class AndroidSourceManager(
 
     private fun registerStubSource(source: StubSource) {
         scope.launch {
-            val dbSource = sourceRepository.getStubSource(source.id)
+            val dbSource = stubSourcesMap[source.id]
             if (dbSource == source) return@launch
-            sourceRepository.upsertStubSource(source.id, source.lang, source.name)
+            stubSourceRepository.upsert(source.id, source.name, source.lang)
             if (dbSource != null) {
                 downloadManager.renameSource(dbSource, source)
             }
         }
     }
 
-    private suspend fun createStubSource(id: Long): StubSource {
-        sourceRepository.getStubSource(id)?.let {
-            return it
+    private fun createStubSource(id: Long): StubSource {
+        val stubSource = extensionManager.getSourceData(id)
+        return if (stubSource != null) {
+            registerStubSource(stubSource)
+            stubSource
+        } else {
+            StubSource(id = id, lang = "", name = "")
         }
-        extensionManager.getSourceData(id)?.let {
-            registerStubSource(it)
-            return it
-        }
-        return StubSource(id = id, lang = "", name = "")
     }
 }
