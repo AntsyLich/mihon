@@ -303,18 +303,14 @@ class MangaRestorer(
 
         val mangaCategoriesToUpdate = categories.mapNotNull { backupCategoryOrder ->
             backupCategoriesByOrder[backupCategoryOrder]?.let { backupCategory ->
-                dbCategoriesByName[backupCategory.name]?.let { dbCategory ->
-                    Pair(manga.id, dbCategory.id)
-                }
+                dbCategoriesByName[backupCategory.name]?.id
             }
         }
 
         if (mangaCategoriesToUpdate.isNotEmpty()) {
             handler.await(true) {
-                mangas_categoriesQueries.deleteMangaCategoryByMangaId(manga.id)
-                mangaCategoriesToUpdate.forEach { (mangaId, categoryId) ->
-                    mangas_categoriesQueries.insert(mangaId, categoryId)
-                }
+                manga_categoryQueries.deleteExcludedMangaCategories(manga.id, mangaCategoriesToUpdate)
+                mangaCategoriesToUpdate.forEach { manga_categoryQueries.insert(manga.id, it) }
             }
         }
     }

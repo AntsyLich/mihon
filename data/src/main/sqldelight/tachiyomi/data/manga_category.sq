@@ -1,0 +1,19 @@
+CREATE TABLE manga_category(
+    manga_id INTEGER NOT NULL,
+    category_id INTEGER NOT NULL,
+    UNIQUE(manga_id, category_id) ON CONFLICT IGNORE,
+    FOREIGN KEY(category_id) REFERENCES categories(_id)
+    ON DELETE CASCADE,
+    FOREIGN KEY(manga_id) REFERENCES mangas(_id)
+    ON DELETE CASCADE
+);
+
+
+insert:
+INSERT INTO manga_category(manga_id, category_id)
+VALUES (:mangaId, :categoryId);
+
+deleteExcludedMangaCategories:
+DELETE FROM manga_category
+WHERE manga_id = :mangaId
+AND category_id NOT IN :categoryIds;

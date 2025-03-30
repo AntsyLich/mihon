@@ -1,4 +1,19 @@
+DROP VIEW libraryView;
+
+DROP TRIGGER insert_manga_category_update_version;
+
+ALTER TABLE mangas_categories RENAME TO manga_category_temp;
 ALTER TABLE sources RENAME TO source_temp;
+
+CREATE TABLE manga_category(
+    manga_id INTEGER NOT NULL,
+    category_id INTEGER NOT NULL,
+    UNIQUE(manga_id, category_id) ON CONFLICT IGNORE,
+    FOREIGN KEY(category_id) REFERENCES categories(_id)
+    ON DELETE CASCADE,
+    FOREIGN KEY(manga_id) REFERENCES mangas(_id)
+    ON DELETE CASCADE
+);
 
 CREATE TABLE source(
     id INTEGER NOT NULL PRIMARY KEY,
@@ -6,8 +21,47 @@ CREATE TABLE source(
     language TEXT NOT NULL
 );
 
+INSERT INTO manga_category
+SELECT manga_id, category_id
+FROM manga_category_temp;
+
 INSERT INTO source
 SELECT _id, name, lang
 FROM source_temp;
 
+CREATE VIEW libraryView AS
+SELECT
+    M.*,
+    coalesce(C.total, 0) AS totalCount,
+    coalesce(C.readCount, 0) AS readCount,
+    coalesce(C.latestUpload, 0) AS latestUpload,
+    coalesce(C.fetchedAt, 0) AS chapterFetchedAt,
+    coalesce(C.lastRead, 0) AS lastRead,
+    coalesce(C.bookmarkCount, 0) AS bookmarkCount,
+    coalesce(MC.category_id, 0) AS category
+FROM mangas M
+LEFT JOIN(
+    SELECT
+        chapters.manga_id,
+        count(*) AS total,
+        sum(read) AS readCount,
+        coalesce(max(chapters.date_upload), 0) AS latestUpload,
+        coalesce(max(history.last_read), 0) AS lastRead,
+        coalesce(max(chapters.date_fetch), 0) AS fetchedAt,
+        sum(chapters.bookmark) AS bookmarkCount
+    FROM chapters
+    LEFT JOIN excluded_scanlators
+    ON chapters.manga_id = excluded_scanlators.manga_id
+    AND chapters.scanlator = excluded_scanlators.scanlator
+    LEFT JOIN history
+    ON chapters._id = history.chapter_id
+    WHERE excluded_scanlators.scanlator IS NULL
+    GROUP BY chapters.manga_id
+) AS C
+ON M._id = C.manga_id
+LEFT JOIN manga_category AS MC
+ON MC.manga_id = M._id
+WHERE M.favorite = 1;
+
+DROP TABLE manga_category_temp;
 DROP TABLE source_temp;

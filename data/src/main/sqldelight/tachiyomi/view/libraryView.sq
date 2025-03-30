@@ -28,7 +28,7 @@ LEFT JOIN(
     GROUP BY chapters.manga_id
 ) AS C
 ON M._id = C.manga_id
-LEFT JOIN mangas_categories AS MC
+LEFT JOIN manga_category AS MC
 ON MC.manga_id = M._id
 WHERE M.favorite = 1;
 
