@@ -21,8 +21,6 @@ class SourcePreferences(
 
     fun enabledLanguages() = preferenceStore.getStringSet("source_languages", LocaleHelper.getDefaultEnabledLanguages())
 
-    fun migrationSources() = preferenceStore.getLongArray("migration_sources", emptyList())
-
     fun disabledSources() = preferenceStore.getStringSet("hidden_catalogues", emptySet())
 
     fun incognitoExtensions() = preferenceStore.getStringSet("incognito_extensions", emptySet())
@@ -43,9 +41,10 @@ class SourcePreferences(
         SetMigrateSorting.Direction.ASCENDING,
     )
 
-    fun migrateFlags() = preferenceStore.getInt("migrate_flags", Int.MAX_VALUE)
 
-    fun migrationSources() = preferenceStore.getString("migrate_sources", "")
+    fun migrationSources() = preferenceStore.getLongArray("migration_sources", emptyList())
+
+    fun migrateFlags() = preferenceStore.getInt("migrate_flags", Int.MAX_VALUE)
 
     fun smartMigration() = preferenceStore.getBoolean("smart_migrate", false)
 
