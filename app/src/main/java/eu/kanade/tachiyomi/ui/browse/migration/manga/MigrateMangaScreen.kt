@@ -15,6 +15,7 @@ import eu.kanade.tachiyomi.ui.browse.migration.advanced.design.PreMigrationScree
 import eu.kanade.tachiyomi.ui.manga.MangaScreen
 import eu.kanade.tachiyomi.util.system.toast
 import kotlinx.coroutines.flow.collectLatest
+import mihon.feature.migration.MigrateMangaConfigScreen
 import tachiyomi.i18n.MR
 import tachiyomi.presentation.core.screens.LoadingScreen
 import uy.kohesive.injekt.Injekt
@@ -41,13 +42,14 @@ data class MigrateMangaScreen(
             navigateUp = navigator::pop,
             title = state.source!!.name,
             state = state,
-            onClickItem = {
-                PreMigrationScreen.navigateToMigration(
-                    Injekt.get<SourcePreferences>().skipPreMigration().get(),
-                    navigator,
-                    listOf(it.id),
-                )
-            },
+//            onClickItem = {
+//                PreMigrationScreen.navigateToMigration(
+//                    Injekt.get<SourcePreferences>().skipPreMigration().get(),
+//                    navigator,
+//                    listOf(it.id),
+//                )
+//            },
+            onClickItem = { navigator.push(MigrateMangaConfigScreen(it.id)) },
             onClickCover = { navigator.push(MangaScreen(it.id)) },
         )
 

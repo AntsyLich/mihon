@@ -7,10 +7,10 @@ shizuku_version = "13.1.0"
 sqldelight = "2.0.2"
 sqlite = "2.5.1"
 voyager = "1.1.0-beta03"
-spotless = "7.0.3"
-ktlint-core = "1.5.0"
+spotless = "7.0.4"
+ktlint-core = "1.6.0"
 firebase-bom = "33.13.0"
-markdown = "0.34.0"
+markdown = "0.35.0"
 
 [libraries]
 desugar = "com.android.tools:desugar_jdk_libs:2.1.5"
@@ -22,7 +22,7 @@ okhttp-core = { module = "com.squareup.okhttp3:okhttp", version.ref = "okhttp_ve
 okhttp-logging = { module = "com.squareup.okhttp3:logging-interceptor", version.ref = "okhttp_version" }
 okhttp-brotli = { module = "com.squareup.okhttp3:okhttp-brotli", version.ref = "okhttp_version" }
 okhttp-dnsoverhttps = { module = "com.squareup.okhttp3:okhttp-dnsoverhttps", version.ref = "okhttp_version" }
-okio = "com.squareup.okio:okio:3.11.0"
+okio = "com.squareup.okio:okio:3.12.0"
 
 conscrypt-android = "org.conscrypt:conscrypt-android:2.5.3"
 
@@ -32,7 +32,7 @@ jsoup = "org.jsoup:jsoup:1.20.1"
 
 disklrucache = "com.jakewharton:disklrucache:2.0.2"
 unifile = "com.github.tachiyomiorg:unifile:e0def6b3dc"
-libarchive = "me.zhanghai.android.libarchive:library:1.1.4"
+libarchive = "me.zhanghai.android.libarchive:library:1.1.5"
 
 sqlite-framework = { module = "androidx.sqlite:sqlite-framework", version.ref = "sqlite" }
 sqlite-ktx = { module = "androidx.sqlite:sqlite-ktx", version.ref = "sqlite" }
