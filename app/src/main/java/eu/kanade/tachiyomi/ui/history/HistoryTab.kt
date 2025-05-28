@@ -24,7 +24,6 @@ import eu.kanade.presentation.history.components.HistoryDeleteDialog
 import eu.kanade.presentation.manga.DuplicateMangaDialog
 import eu.kanade.presentation.util.Tab
 import eu.kanade.tachiyomi.R
-import eu.kanade.tachiyomi.ui.browse.migration.advanced.design.PreMigrationScreen
 import eu.kanade.tachiyomi.ui.category.CategoryScreen
 import eu.kanade.tachiyomi.ui.main.MainActivity
 import eu.kanade.tachiyomi.ui.manga.MangaScreen
@@ -32,6 +31,7 @@ import eu.kanade.tachiyomi.ui.reader.ReaderActivity
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.receiveAsFlow
+import mihon.feature.migration.MigrateMangaConfigScreen
 import tachiyomi.core.common.i18n.stringResource
 import tachiyomi.domain.chapter.model.Chapter
 import tachiyomi.i18n.MR
@@ -106,14 +106,8 @@ data object HistoryTab : Tab {
                         screenModel.addFavorite(dialog.manga)
                     },
                     onOpenManga = { navigator.push(MangaScreen(it.id)) },
-                    onMigrate = {
-                        PreMigrationScreen.navigateToMigration(
-                            Injekt.get<SourcePreferences>().skipPreMigration().get(),
-                            navigator,
-                            it.id,
-                            dialog.manga.id,
-                        )
-                    },
+                    // TODO(antsy): Properly work out migration on duplicate
+                    onMigrate = { navigator.push(MigrateMangaConfigScreen(it.id)) },
                 )
             }
             is HistoryScreenModel.Dialog.ChangeCategory -> {

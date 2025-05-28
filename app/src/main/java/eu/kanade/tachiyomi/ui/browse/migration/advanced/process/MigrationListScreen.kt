@@ -14,11 +14,11 @@ import eu.kanade.presentation.browse.components.MigrationExitDialog
 import eu.kanade.presentation.browse.components.MigrationMangaDialog
 import eu.kanade.presentation.browse.components.MigrationProgressDialog
 import eu.kanade.presentation.util.Screen
-import eu.kanade.tachiyomi.ui.browse.migration.advanced.design.PreMigrationScreen
 import eu.kanade.tachiyomi.ui.browse.migration.search.MigrateSearchScreen
 import eu.kanade.tachiyomi.ui.manga.MangaScreen
 import eu.kanade.tachiyomi.util.system.toast
 import kotlinx.collections.immutable.persistentListOf
+import mihon.feature.migration.MigrateMangaConfigScreen
 import tachiyomi.core.common.i18n.pluralStringResource
 import tachiyomi.core.common.util.lang.withUIContext
 import tachiyomi.i18n.MR
@@ -75,7 +75,7 @@ class MigrationListScreen(private val config: MigrationProcedureConfig) : Screen
                             val newStack = navigator.items.filter {
                                 it !is MangaScreen &&
                                     it !is MigrationListScreen &&
-                                    it !is PreMigrationScreen
+                                    it !is MigrateMangaConfigScreen
                             } + MangaScreen(mangaId)
                             navigator replaceAll newStack.first()
                             navigator.push(newStack.drop(1))

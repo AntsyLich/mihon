@@ -22,10 +22,14 @@ import androidx.compose.material3.ListItemDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
@@ -44,9 +48,14 @@ import eu.kanade.presentation.components.AppBar
 import eu.kanade.presentation.components.AppBarActions
 import eu.kanade.presentation.util.Screen
 import eu.kanade.tachiyomi.source.online.HttpSource
+import eu.kanade.tachiyomi.ui.browse.migration.advanced.design.MigrationBottomSheetDialog
+import eu.kanade.tachiyomi.ui.browse.migration.advanced.design.MigrationType
+import eu.kanade.tachiyomi.ui.browse.migration.advanced.process.MigrationListScreen
+import eu.kanade.tachiyomi.ui.browse.migration.advanced.process.MigrationProcedureConfig
 import eu.kanade.tachiyomi.ui.browse.migration.search.MigrateSearchScreen
 import eu.kanade.tachiyomi.util.system.LocaleHelper
 import kotlinx.collections.immutable.persistentListOf
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.flow.updateAndGet
 import sh.calvin.reorderable.ReorderableCollectionItemScope
 import sh.calvin.reorderable.ReorderableItem
@@ -63,17 +72,45 @@ import tachiyomi.presentation.core.components.material.ExtendedFloatingActionBut
 import tachiyomi.presentation.core.components.material.Scaffold
 import tachiyomi.presentation.core.components.material.padding
 import tachiyomi.presentation.core.i18n.stringResource
+import tachiyomi.presentation.core.screens.LoadingScreen
 import tachiyomi.presentation.core.util.shouldExpandFAB
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 
-class MigrateMangaConfigScreen(private val mangaId: Long) : Screen() {
+class MigrateMangaConfigScreen(private val mangaIds: List<Long>) : Screen() {
+
+    constructor(mangaId: Long): this(listOf(mangaId))
 
     @Composable
     override fun Content() {
         val navigator = LocalNavigator.currentOrThrow
         val screenModel = rememberScreenModel { ScreenModel() }
         val state by screenModel.state.collectAsState()
+
+        var migrationSheetOpen by rememberSaveable { mutableStateOf(false) }
+
+        val continueMigration: (showSheet: Boolean, extraParams: String?) -> Unit = f@{ showSheet, extraParams ->
+            val mangaId = mangaIds.singleOrNull()
+            if (mangaId == null && showSheet) {
+                migrationSheetOpen = true
+                return@f
+            }
+            val screen = if (mangaId == null) {
+                MigrationListScreen(config = MigrationProcedureConfig(MigrationType.MangaList(mangaIds), extraParams))
+            } else {
+                MigrateSearchScreen(mangaId)
+            }
+            navigator.replace(screen)
+        }
+
+        if (state.isLoading) {
+            LaunchedEffect(state.skipPreMigration) {
+                if (state.skipPreMigration) continueMigration(false, null)
+            }
+            LoadingScreen()
+            return
+        }
+
         val (selectedSources, availableSources) = state.sources.partition { it.isSelected }
         val showLanguage by remember(state) {
             derivedStateOf {
@@ -118,7 +155,7 @@ class MigrateMangaConfigScreen(private val mangaId: Long) : Screen() {
                 ExtendedFloatingActionButton(
                     text = { Text(text = stringResource(MR.strings.migrationConfigScreen_continueButtonText)) },
                     icon = { Icon(imageVector = Icons.AutoMirrored.Outlined.ArrowForward, contentDescription = null) },
-                    onClick = { navigator.replace(MigrateSearchScreen(mangaId)) },
+                    onClick = { continueMigration(true, null) },
                     expanded = lazyListState.shouldExpandFAB(),
                 )
             },
@@ -173,6 +210,16 @@ class MigrateMangaConfigScreen(private val mangaId: Long) : Screen() {
                     }
                 }
             }
+        }
+
+        if (migrationSheetOpen) {
+            MigrationBottomSheetDialog(
+                onDismissRequest = { migrationSheetOpen = false },
+                onStartMigration = { extraParam ->
+                    migrationSheetOpen = false
+                    continueMigration(false, extraParam)
+                },
+            )
         }
     }
 
@@ -281,7 +328,13 @@ class MigrateMangaConfigScreen(private val mangaId: Long) : Screen() {
 
         init {
             screenModelScope.launchIO {
+                val skipPreMigration = mutableState.updateAndGet {
+                    it.copy(skipPreMigration = sourcePreferences.skipPreMigration().get())
+                }
+                    .skipPreMigration
+                if (skipPreMigration) return@launchIO
                 initSources()
+                mutableState.update { it.copy(isLoading = false) }
             }
         }
 
@@ -375,6 +428,8 @@ class MigrateMangaConfigScreen(private val mangaId: Long) : Screen() {
         }
 
         data class State(
+            val isLoading: Boolean = true,
+            val skipPreMigration: Boolean = false,
             val sources: List<MigrationSource> = emptyList(),
         )
 
