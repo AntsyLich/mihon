@@ -1,11 +1,10 @@
-package eu.kanade.tachiyomi.ui.browse.migration.advanced.process.smartsearch
+package mihon.feature.migration.list.smartsearch
 
-import info.debatty.java.stringsimilarity.NormalizedLevenshtein
+import com.aallam.similarity.NormalizedLevenshtein
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.supervisorScope
 import java.util.Locale
-import kotlin.text.iterator
 
 typealias SearchAction<T> = suspend (String) -> List<T>
 

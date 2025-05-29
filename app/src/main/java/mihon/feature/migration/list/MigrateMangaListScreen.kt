@@ -1,4 +1,4 @@
-package eu.kanade.tachiyomi.ui.browse.migration.advanced.process
+package mihon.feature.migration.list
 
 import androidx.activity.compose.BackHandler
 import androidx.compose.runtime.Composable
@@ -9,27 +9,30 @@ import androidx.compose.ui.platform.LocalContext
 import cafe.adriel.voyager.core.model.rememberScreenModel
 import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
-import eu.kanade.presentation.browse.MigrationListScreen
-import eu.kanade.presentation.browse.components.MigrationExitDialog
-import eu.kanade.presentation.browse.components.MigrationMangaDialog
-import eu.kanade.presentation.browse.components.MigrationProgressDialog
 import eu.kanade.presentation.util.Screen
 import eu.kanade.tachiyomi.ui.browse.migration.search.MigrateSearchScreen
 import eu.kanade.tachiyomi.ui.manga.MangaScreen
 import eu.kanade.tachiyomi.util.system.toast
 import kotlinx.collections.immutable.persistentListOf
-import mihon.feature.migration.MigrateMangaConfigScreen
+import mihon.feature.migration.config.MigrateMangaConfigScreen
+import mihon.feature.migration.list.components.MigrationExitDialog
+import mihon.feature.migration.list.components.MigrationMangaDialog
+import mihon.feature.migration.list.components.MigrationProgressDialog
+import mihon.feature.migration.list.models.MigratingManga
+import mihon.feature.migration.list.models.MigrationProcedureConfig
+import mihon.feature.migration.list.models.MigrationType
 import tachiyomi.core.common.i18n.pluralStringResource
 import tachiyomi.core.common.util.lang.withUIContext
 import tachiyomi.i18n.MR
 
-class MigrationListScreen(private val config: MigrationProcedureConfig) : Screen() {
+class MigrateMangaListScreen(private val config: MigrationProcedureConfig) : Screen() {
+    constructor(mangaIds: List<Long>, extraParams: String?): this(MigrationProcedureConfig(MigrationType.MangaList(mangaIds), extraParams))
 
     var newSelectedItem: Pair<Long, Long>? = null
 
     @Composable
     override fun Content() {
-        val screenModel = rememberScreenModel { MigrationListScreenModel(config) }
+        val screenModel = rememberScreenModel { MigrateMangaListScreenModel(config) }
         val items by screenModel.migratingItems.collectAsState()
         val migrationDone by screenModel.migrationDone.collectAsState()
         val unfinishedCount by screenModel.unfinishedCount.collectAsState()
@@ -74,14 +77,14 @@ class MigrationListScreen(private val config: MigrationProcedureConfig) : Screen
                         if (mangaId != null) {
                             val newStack = navigator.items.filter {
                                 it !is MangaScreen &&
-                                    it !is MigrationListScreen &&
+                                    it !is MigrateMangaListScreen &&
                                     it !is MigrateMangaConfigScreen
                             } + MangaScreen(mangaId)
                             navigator replaceAll newStack.first()
                             navigator.push(newStack.drop(1))
 
                             // need to set the navigator in a pop state to dispose of everything properly
-                            navigator.push(this@MigrationListScreen)
+                            navigator.push(this@MigrateMangaListScreen)
                             navigator.pop()
                         } else {
                             navigator.pop()
@@ -94,7 +97,7 @@ class MigrationListScreen(private val config: MigrationProcedureConfig) : Screen
                 }
             }
         }
-        MigrationListScreen(
+        MigrationListScreenContent(
             items = items ?: persistentListOf(),
             migrationDone = migrationDone,
             unfinishedCount = unfinishedCount,
@@ -119,7 +122,7 @@ class MigrationListScreen(private val config: MigrationProcedureConfig) : Screen
             @Suppress("NAME_SHADOWING")
             val dialog = dialog
         ) {
-            is MigrationListScreenModel.Dialog.MigrateMangaDialog -> {
+            is MigrateMangaListScreenModel.Dialog.MigrateMangaDialog -> {
                 MigrationMangaDialog(
                     onDismissRequest = onDismissRequest,
                     copy = dialog.copy,
@@ -129,7 +132,7 @@ class MigrationListScreen(private val config: MigrationProcedureConfig) : Screen
                     migrateManga = screenModel::migrateMangas,
                 )
             }
-            MigrationListScreenModel.Dialog.MigrationExitDialog -> {
+            MigrateMangaListScreenModel.Dialog.MigrationExitDialog -> {
                 MigrationExitDialog(
                     onDismissRequest = onDismissRequest,
                     exitMigration = navigator::pop,
@@ -146,7 +149,7 @@ class MigrationListScreen(private val config: MigrationProcedureConfig) : Screen
         }
 
         BackHandler(true) {
-            screenModel.dialog.value = MigrationListScreenModel.Dialog.MigrationExitDialog
+            screenModel.dialog.value = MigrateMangaListScreenModel.Dialog.MigrationExitDialog
         }
     }
 }

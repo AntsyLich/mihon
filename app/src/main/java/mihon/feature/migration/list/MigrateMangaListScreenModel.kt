@@ -1,4 +1,4 @@
-package eu.kanade.tachiyomi.ui.browse.migration.advanced.process
+package mihon.feature.migration.list
 
 import android.content.Context
 import android.widget.Toast
@@ -14,9 +14,6 @@ import eu.kanade.tachiyomi.data.download.DownloadManager
 import eu.kanade.tachiyomi.source.CatalogueSource
 import eu.kanade.tachiyomi.source.getNameForMangaInfo
 import eu.kanade.tachiyomi.ui.browse.migration.MigrationFlags
-import eu.kanade.tachiyomi.ui.browse.migration.advanced.design.MigrationType
-import eu.kanade.tachiyomi.ui.browse.migration.advanced.process.MigratingManga.SearchResult
-import eu.kanade.tachiyomi.ui.browse.migration.advanced.process.smartsearch.SmartSourceSearchEngine
 import eu.kanade.tachiyomi.util.system.toast
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.toImmutableList
@@ -33,6 +30,11 @@ import kotlinx.coroutines.isActive
 import kotlinx.coroutines.sync.Semaphore
 import kotlinx.coroutines.sync.withPermit
 import logcat.LogPriority
+import mihon.feature.migration.list.models.MigratingManga
+import mihon.feature.migration.list.models.MigratingManga.SearchResult
+import mihon.feature.migration.list.models.MigrationProcedureConfig
+import mihon.feature.migration.list.models.MigrationType
+import mihon.feature.migration.list.smartsearch.SmartSourceSearchEngine
 import tachiyomi.core.common.util.lang.launchIO
 import tachiyomi.core.common.util.lang.withUIContext
 import tachiyomi.core.common.util.system.logcat
@@ -58,7 +60,7 @@ import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 import java.util.concurrent.atomic.AtomicInteger
 
-class MigrationListScreenModel(
+class MigrateMangaListScreenModel(
     private val config: MigrationProcedureConfig,
     private val preferences: SourcePreferences = Injekt.get(),
     private val sourceManager: SourceManager = Injekt.get(),
@@ -245,7 +247,7 @@ class MigrationListScreenModel(
                                         val chapters = try {
                                             source.getChapterList(localManga.toSManga())
                                         } catch (e: Exception) {
-                                            this@MigrationListScreenModel.logcat(LogPriority.ERROR, e)
+                                            this@MigrateMangaListScreenModel.logcat(LogPriority.ERROR, e)
                                             emptyList()
                                         }
                                         syncChaptersWithSource.await(chapters, localManga, source)
@@ -326,7 +328,7 @@ class MigrationListScreenModel(
     ) {
         if (prevManga.id == manga.id) return // Nothing to migrate
 
-        val flags = preferences.migrateFlags().get()
+        val flags = preferences.migrationFlags().get()
         // Update chapters read
         if (MigrationFlags.hasChapters(flags)) {
             val prevMangaChapters = getChaptersByMangaId.await(prevManga.id)
@@ -577,6 +579,6 @@ class MigrationListScreenModel(
 
     sealed class Dialog {
         data class MigrateMangaDialog(val copy: Boolean, val mangaSet: Int, val mangaSkipped: Int) : Dialog()
-        object MigrationExitDialog : Dialog()
+        data object MigrationExitDialog : Dialog()
     }
 }

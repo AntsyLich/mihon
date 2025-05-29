@@ -8,7 +8,7 @@ import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
 import eu.kanade.presentation.browse.MigrateSearchScreen
 import eu.kanade.presentation.util.Screen
-import eu.kanade.tachiyomi.ui.browse.migration.advanced.process.MigrationListScreen
+import mihon.feature.migration.list.MigrateMangaListScreen
 import eu.kanade.tachiyomi.ui.manga.MangaScreen
 
 class MigrateSearchScreen(private val mangaId: Long) : Screen() {
@@ -37,10 +37,10 @@ class MigrateSearchScreen(private val mangaId: Long) : Screen() {
             },
             onClickItem = {
                 navigator.items
-                    .filterIsInstance<MigrationListScreen>()
+                    .filterIsInstance<MigrateMangaListScreen>()
                     .last()
                     .newSelectedItem = mangaId to it.id
-                navigator.popUntil { it is MigrationListScreen }
+                navigator.popUntil { it is MigrateMangaListScreen }
             },
             onLongClickItem = { navigator.push(MangaScreen(it.id, true)) },
         )

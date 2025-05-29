@@ -1,6 +1,5 @@
-package eu.kanade.tachiyomi.ui.browse.migration.advanced.process
+package mihon.feature.migration.list.models
 
-import eu.kanade.tachiyomi.ui.browse.migration.advanced.design.MigrationType
 import java.io.Serializable
 
 data class MigrationProcedureConfig(

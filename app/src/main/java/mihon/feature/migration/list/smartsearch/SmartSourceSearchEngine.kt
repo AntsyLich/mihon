@@ -1,4 +1,4 @@
-package eu.kanade.tachiyomi.ui.browse.migration.advanced.process.smartsearch
+package mihon.feature.migration.list.smartsearch
 
 import eu.kanade.tachiyomi.source.CatalogueSource
 import eu.kanade.tachiyomi.source.model.FilterList

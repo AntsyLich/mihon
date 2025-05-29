@@ -44,13 +44,13 @@ class SourcePreferences(
 
     fun migrationSources() = preferenceStore.getLongArray("migration_sources", emptyList())
 
-    fun migrateFlags() = preferenceStore.getInt("migrate_flags", Int.MAX_VALUE)
+    fun migrationFlags() = preferenceStore.getInt("migrate_flags", Int.MAX_VALUE)
 
     fun smartMigration() = preferenceStore.getBoolean("smart_migrate", false)
 
     fun useSourceWithMost() = preferenceStore.getBoolean("use_source_with_most", false)
 
-    fun skipPreMigration() = preferenceStore.getBoolean(Preference.appStateKey("skip_pre_migration"), false)
+    fun skipMigrationConfigScreen() = preferenceStore.getBoolean(Preference.appStateKey("skip_pre_migration"), false)
 
     fun hideNotFoundMigration() = preferenceStore.getBoolean("hide_not_found_migration", false)
 

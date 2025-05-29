@@ -78,14 +78,14 @@ object SettingsBrowseScreen : SearchableSettings {
 
     @Composable
     fun getMigrationCategory(sourcePreferences: SourcePreferences): Preference.PreferenceGroup {
-        val skipPreMigration by sourcePreferences.skipPreMigration().collectAsState()
+        val skipPreMigration by sourcePreferences.skipMigrationConfigScreen().collectAsState()
         val migrationSources by sourcePreferences.migrationSources().collectAsState()
         return Preference.PreferenceGroup(
-            stringResource(MR.strings.migration),
+            title = stringResource(MR.strings.migration),
             enabled = skipPreMigration || migrationSources.isNotEmpty(),
             preferenceItems = persistentListOf(
                 Preference.PreferenceItem.SwitchPreference(
-                    preference = sourcePreferences.skipPreMigration(),
+                    preference = sourcePreferences.skipMigrationConfigScreen(),
                     title = stringResource(MR.strings.skip_pre_migration),
                     subtitle = stringResource(MR.strings.pref_skip_pre_migration_summary),
                 ),

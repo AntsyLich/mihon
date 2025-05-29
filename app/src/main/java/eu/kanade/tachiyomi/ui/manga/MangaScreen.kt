@@ -57,7 +57,7 @@ import eu.kanade.tachiyomi.util.system.toShareIntent
 import eu.kanade.tachiyomi.util.system.toast
 import kotlinx.coroutines.launch
 import logcat.LogPriority
-import mihon.feature.migration.MigrateMangaConfigScreen
+import mihon.feature.migration.config.MigrateMangaConfigScreen
 import tachiyomi.core.common.i18n.stringResource
 import tachiyomi.core.common.util.lang.withIOContext
 import tachiyomi.core.common.util.system.logcat

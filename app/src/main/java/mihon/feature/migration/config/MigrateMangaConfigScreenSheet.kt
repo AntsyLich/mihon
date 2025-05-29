@@ -1,4 +1,4 @@
-package eu.kanade.tachiyomi.ui.browse.migration.advanced.design
+package mihon.feature.migration.config
 
 import android.view.LayoutInflater
 import android.widget.CompoundButton
@@ -24,13 +24,13 @@ import tachiyomi.i18n.MR
 import uy.kohesive.injekt.injectLazy
 
 @Composable
-fun MigrationBottomSheetDialog(
+fun MigrateMangaConfigScreenSheet(
     onDismissRequest: () -> Unit,
     onStartMigration: (extraParam: String?) -> Unit,
 ) {
     val startMigration = rememberUpdatedState(onStartMigration)
     val state = remember {
-        MigrationBottomSheetDialogState(startMigration)
+        MigrateMangaConfigScreenSheetState(startMigration)
     }
     AdaptiveSheet(onDismissRequest = onDismissRequest) {
         AndroidView(
@@ -44,14 +44,14 @@ fun MigrationBottomSheetDialog(
     }
 }
 
-class MigrationBottomSheetDialogState(private val onStartMigration: State<(extraParam: String?) -> Unit>) {
+private class MigrateMangaConfigScreenSheetState(private val onStartMigration: State<(extraParam: String?) -> Unit>) {
     private val preferences: SourcePreferences by injectLazy()
 
     /**
      * Init general reader preferences.
      */
     fun initPreferences(binding: MigrationBottomSheetBinding) {
-        val flags = preferences.migrateFlags().get()
+        val flags = preferences.migrationFlags().get()
 
         binding.migChapters.isChecked = MigrationFlags.hasChapters(flags)
         binding.migCategories.isChecked = MigrationFlags.hasCategories(flags)
@@ -76,7 +76,7 @@ class MigrationBottomSheetDialogState(private val onStartMigration: State<(extra
         }
         binding.sourceGroup.bindToPreference(preferences.useSourceWithMost())
 
-        binding.skipStep.isChecked = preferences.skipPreMigration().get()
+        binding.skipStep.isChecked = preferences.skipMigrationConfigScreen().get()
         binding.HideNotFoundManga.isChecked = preferences.hideNotFoundMigration().get()
         binding.OnlyShowUpdates.isChecked = preferences.showOnlyUpdatesMigration().get()
         binding.skipStep.setOnCheckedChangeListener { _, isChecked ->
@@ -89,7 +89,7 @@ class MigrationBottomSheetDialogState(private val onStartMigration: State<(extra
         }
 
         binding.migrateBtn.setOnClickListener {
-            preferences.skipPreMigration().set(binding.skipStep.isChecked)
+            preferences.skipMigrationConfigScreen().set(binding.skipStep.isChecked)
             preferences.hideNotFoundMigration().set(binding.HideNotFoundManga.isChecked)
             preferences.showOnlyUpdatesMigration().set(binding.OnlyShowUpdates.isChecked)
             onStartMigration.value(
@@ -111,7 +111,7 @@ class MigrationBottomSheetDialogState(private val onStartMigration: State<(extra
         if (binding.migExtra.isChecked) flags = flags or MigrationFlags.EXTRA
         if (binding.migDeleteDownloaded.isChecked) flags = flags or MigrationFlags.DELETE_CHAPTERS
         if (binding.migNotes.isChecked) flags = flags or MigrationFlags.NOTES
-        preferences.migrateFlags().set(flags)
+        preferences.migrationFlags().set(flags)
     }
 
     /**

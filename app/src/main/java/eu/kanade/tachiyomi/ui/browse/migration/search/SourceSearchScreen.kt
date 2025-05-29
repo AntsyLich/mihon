@@ -21,7 +21,7 @@ import eu.kanade.presentation.browse.BrowseSourceContent
 import eu.kanade.presentation.components.SearchToolbar
 import eu.kanade.presentation.util.Screen
 import eu.kanade.tachiyomi.source.online.HttpSource
-import eu.kanade.tachiyomi.ui.browse.migration.advanced.process.MigrationListScreen
+import mihon.feature.migration.list.MigrateMangaListScreen
 import eu.kanade.tachiyomi.ui.browse.source.browse.BrowseSourceScreenModel
 import eu.kanade.tachiyomi.ui.browse.source.browse.SourceFilterDialog
 import eu.kanade.tachiyomi.ui.manga.MangaScreen
@@ -80,10 +80,10 @@ data class SourceSearchScreen(
         ) { paddingValues ->
             val openMigrateDialog: (Manga) -> Unit = {
                 navigator.items
-                    .filterIsInstance<MigrationListScreen>()
+                    .filterIsInstance<MigrateMangaListScreen>()
                     .last()
                     .newSelectedItem = oldManga.id to it.id
-                navigator.popUntil { it is MigrationListScreen }
+                navigator.popUntil { it is MigrateMangaListScreen }
             }
             BrowseSourceContent(
                 source = screenModel.source,

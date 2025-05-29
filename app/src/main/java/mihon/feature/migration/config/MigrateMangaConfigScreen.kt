@@ -1,4 +1,4 @@
-package mihon.feature.migration
+package mihon.feature.migration.config
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -48,15 +48,12 @@ import eu.kanade.presentation.components.AppBar
 import eu.kanade.presentation.components.AppBarActions
 import eu.kanade.presentation.util.Screen
 import eu.kanade.tachiyomi.source.online.HttpSource
-import eu.kanade.tachiyomi.ui.browse.migration.advanced.design.MigrationBottomSheetDialog
-import eu.kanade.tachiyomi.ui.browse.migration.advanced.design.MigrationType
-import eu.kanade.tachiyomi.ui.browse.migration.advanced.process.MigrationListScreen
-import eu.kanade.tachiyomi.ui.browse.migration.advanced.process.MigrationProcedureConfig
 import eu.kanade.tachiyomi.ui.browse.migration.search.MigrateSearchScreen
 import eu.kanade.tachiyomi.util.system.LocaleHelper
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.flow.updateAndGet
+import mihon.feature.migration.list.MigrateMangaListScreen
 import sh.calvin.reorderable.ReorderableCollectionItemScope
 import sh.calvin.reorderable.ReorderableItem
 import sh.calvin.reorderable.ReorderableLazyListState
@@ -96,7 +93,7 @@ class MigrateMangaConfigScreen(private val mangaIds: List<Long>) : Screen() {
                 return@f
             }
             val screen = if (mangaId == null) {
-                MigrationListScreen(config = MigrationProcedureConfig(MigrationType.MangaList(mangaIds), extraParams))
+                MigrateMangaListScreen(mangaIds, extraParams)
             } else {
                 MigrateSearchScreen(mangaId)
             }
@@ -213,7 +210,7 @@ class MigrateMangaConfigScreen(private val mangaIds: List<Long>) : Screen() {
         }
 
         if (migrationSheetOpen) {
-            MigrationBottomSheetDialog(
+            MigrateMangaConfigScreenSheet(
                 onDismissRequest = { migrationSheetOpen = false },
                 onStartMigration = { extraParam ->
                     migrationSheetOpen = false
@@ -329,7 +326,7 @@ class MigrateMangaConfigScreen(private val mangaIds: List<Long>) : Screen() {
         init {
             screenModelScope.launchIO {
                 val skipPreMigration = mutableState.updateAndGet {
-                    it.copy(skipPreMigration = sourcePreferences.skipPreMigration().get())
+                    it.copy(skipPreMigration = sourcePreferences.skipMigrationConfigScreen().get())
                 }
                     .skipPreMigration
                 if (skipPreMigration) return@launchIO
@@ -446,6 +443,5 @@ class MigrateMangaConfigScreen(private val mangaIds: List<Long>) : Screen() {
         val isSelected: Boolean,
     ) {
         val id = source.id
-        val visualName = source.visualName
     }
 }

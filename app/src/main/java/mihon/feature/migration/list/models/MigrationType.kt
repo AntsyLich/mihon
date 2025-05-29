@@ -1,4 +1,4 @@
-package eu.kanade.tachiyomi.ui.browse.migration.advanced.design
+package mihon.feature.migration.list.models
 
 import java.io.Serializable
 
