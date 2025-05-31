@@ -25,8 +25,19 @@ class MigrateSearchScreenDialogScreenModel(
         }
     }
 
+    fun setDialog(dialog: Dialog?) {
+        mutableState.update {
+            it.copy(dialog = dialog)
+        }
+    }
+
     @Immutable
     data class State(
         val manga: Manga? = null,
+        val dialog: Dialog? = null,
     )
+
+    sealed interface Dialog {
+        data class Migrate(val manga: Manga) : Dialog
+    }
 }

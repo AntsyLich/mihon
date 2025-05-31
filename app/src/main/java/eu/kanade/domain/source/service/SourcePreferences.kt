@@ -45,7 +45,12 @@ class SourcePreferences(
 
     fun migrationSources() = preferenceStore.getLongArray("migration_sources", emptyList())
 
-    fun migrationFlags() = preferenceStore.getInt("migrate_flags", Int.MAX_VALUE)
+    fun migrationFlags() = preferenceStore.getObjectFromInt(
+        key = "migrate_flags",
+        defaultValue = MigrationFlag.entries.toSet(),
+        serializer = { MigrationFlag.toBit(it) },
+        deserializer = { value: Int -> MigrationFlag.fromBit(value) },
+    )
 
     fun smartMigration() = preferenceStore.getBoolean("smart_migrate", false)
 
@@ -71,12 +76,5 @@ class SourcePreferences(
     fun globalSearchFilterState() = preferenceStore.getBoolean(
         Preference.appStateKey("has_filters_toggle_state"),
         false,
-    )
-
-    fun migrationFlags() = preferenceStore.getObjectFromInt(
-        key = "migrate_flags",
-        defaultValue = MigrationFlag.entries.toSet(),
-        serializer = { MigrationFlag.toBit(it) },
-        deserializer = { value: Int -> MigrationFlag.fromBit(value) },
     )
 }

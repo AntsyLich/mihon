@@ -16,8 +16,8 @@ import androidx.core.view.isVisible
 import eu.kanade.domain.source.service.SourcePreferences
 import eu.kanade.presentation.components.AdaptiveSheet
 import eu.kanade.tachiyomi.databinding.MigrationBottomSheetBinding
-import eu.kanade.tachiyomi.ui.browse.migration.MigrationFlags
 import eu.kanade.tachiyomi.util.system.toast
+import mihon.domain.migration.models.MigrationFlag
 import tachiyomi.core.common.preference.Preference
 import tachiyomi.core.common.util.lang.toLong
 import tachiyomi.i18n.MR
@@ -53,13 +53,11 @@ private class MigrationConfigScreenSheetState(private val onStartMigration: Stat
     fun initPreferences(binding: MigrationBottomSheetBinding) {
         val flags = preferences.migrationFlags().get()
 
-        binding.migChapters.isChecked = MigrationFlags.hasChapters(flags)
-        binding.migCategories.isChecked = MigrationFlags.hasCategories(flags)
-        binding.migTracking.isChecked = MigrationFlags.hasTracks(flags)
-        binding.migCustomCover.isChecked = MigrationFlags.hasCustomCover(flags)
-        binding.migExtra.isChecked = MigrationFlags.hasExtra(flags)
-        binding.migDeleteDownloaded.isChecked = MigrationFlags.hasDeleteChapters(flags)
-        binding.migNotes.isChecked = MigrationFlags.hasNotes(flags)
+        binding.migChapters.isChecked = MigrationFlag.CHAPTER in flags
+        binding.migCategories.isChecked = MigrationFlag.CATEGORY in flags
+        binding.migCustomCover.isChecked = MigrationFlag.CUSTOM_COVER in flags
+        binding.migDeleteDownloaded.isChecked = MigrationFlag.REMOVE_DOWNLOAD in flags
+        binding.migNotes.isChecked = MigrationFlag.NOTES in flags
 
         binding.migChapters.setOnCheckedChangeListener { _, _ -> setFlags(binding) }
         binding.migCategories.setOnCheckedChangeListener { _, _ -> setFlags(binding) }
@@ -103,14 +101,13 @@ private class MigrationConfigScreenSheetState(private val onStartMigration: Stat
     }
 
     private fun setFlags(binding: MigrationBottomSheetBinding) {
-        var flags = 0
-        if (binding.migChapters.isChecked) flags = flags or MigrationFlags.CHAPTERS
-        if (binding.migCategories.isChecked) flags = flags or MigrationFlags.CATEGORIES
-        if (binding.migTracking.isChecked) flags = flags or MigrationFlags.TRACK
-        if (binding.migCustomCover.isChecked) flags = flags or MigrationFlags.CUSTOM_COVER
-        if (binding.migExtra.isChecked) flags = flags or MigrationFlags.EXTRA
-        if (binding.migDeleteDownloaded.isChecked) flags = flags or MigrationFlags.DELETE_CHAPTERS
-        if (binding.migNotes.isChecked) flags = flags or MigrationFlags.NOTES
+        val flags = buildSet {
+            if (binding.migChapters.isChecked) add(MigrationFlag.CHAPTER)
+            if (binding.migCategories.isChecked) add(MigrationFlag.CATEGORY)
+            if (binding.migCustomCover.isChecked) add(MigrationFlag.CUSTOM_COVER)
+            if (binding.migDeleteDownloaded.isChecked) add(MigrationFlag.REMOVE_DOWNLOAD)
+            if (binding.migNotes.isChecked) add(MigrationFlag.NOTES)
+        }
         preferences.migrationFlags().set(flags)
     }
 

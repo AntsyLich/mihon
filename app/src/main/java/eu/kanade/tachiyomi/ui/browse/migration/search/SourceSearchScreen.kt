@@ -21,13 +21,15 @@ import eu.kanade.presentation.browse.BrowseSourceContent
 import eu.kanade.presentation.components.SearchToolbar
 import eu.kanade.presentation.util.Screen
 import eu.kanade.tachiyomi.source.online.HttpSource
-import mihon.feature.migration.list.MigrateMangaListScreen
 import eu.kanade.tachiyomi.ui.browse.source.browse.BrowseSourceScreenModel
 import eu.kanade.tachiyomi.ui.browse.source.browse.SourceFilterDialog
+import eu.kanade.tachiyomi.ui.home.HomeScreen
 import eu.kanade.tachiyomi.ui.manga.MangaScreen
 import eu.kanade.tachiyomi.ui.webview.WebViewScreen
 import kotlinx.coroutines.launch
+import mihon.core.migration.Migrator.scope
 import mihon.feature.migration.dialog.MigrateMangaDialog
+import mihon.feature.migration.list.MigrateMangaListScreen
 import mihon.presentation.core.util.collectAsLazyPagingItems
 import tachiyomi.core.common.Constants
 import tachiyomi.domain.manga.model.Manga
@@ -39,7 +41,7 @@ import tachiyomi.presentation.core.screens.LoadingScreen
 import tachiyomi.source.local.LocalSource
 
 data class SourceSearchScreen(
-    private val oldManga: Manga,
+    private val currentManga: Manga,
     private val sourceId: Long,
     private val query: String?,
 ) : Screen() {
@@ -84,7 +86,7 @@ data class SourceSearchScreen(
                 navigator.items
                     .filterIsInstance<MigrateMangaListScreen>()
                     .last()
-                    .newSelectedItem = oldManga.id to it.id
+                    .newSelectedItem = currentManga.id to it.id
                 navigator.popUntil { it is MigrateMangaListScreen }
             }
             BrowseSourceContent(
@@ -112,7 +114,7 @@ data class SourceSearchScreen(
         }
 
         val onDismissRequest = { screenModel.setDialog(null) }
-        when (state.dialog) {
+        when (val dialog = state.dialog) {
             is BrowseSourceScreenModel.Dialog.Filter -> {
                 SourceFilterDialog(
                     onDismissRequest = onDismissRequest,
@@ -124,7 +126,7 @@ data class SourceSearchScreen(
             }
             is BrowseSourceScreenModel.Dialog.Migrate -> {
                 MigrateMangaDialog(
-                    current = oldManga,
+                    current = currentManga,
                     target = dialog.target,
                     onClickTitle = { navigator.push(MangaScreen(dialog.target.id)) },
                     onDismissRequest = onDismissRequest,
