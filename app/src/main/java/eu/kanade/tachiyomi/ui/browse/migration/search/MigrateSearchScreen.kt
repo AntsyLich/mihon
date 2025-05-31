@@ -10,6 +10,7 @@ import eu.kanade.presentation.browse.MigrateSearchScreen
 import eu.kanade.presentation.util.Screen
 import mihon.feature.migration.list.MigrateMangaListScreen
 import eu.kanade.tachiyomi.ui.manga.MangaScreen
+import mihon.feature.migration.dialog.MigrateMangaDialog
 
 class MigrateSearchScreen(private val mangaId: Long) : Screen() {
 
@@ -44,5 +45,28 @@ class MigrateSearchScreen(private val mangaId: Long) : Screen() {
             },
             onLongClickItem = { navigator.push(MangaScreen(it.id, true)) },
         )
+
+        when (val dialog = dialogState.dialog) {
+            is MigrateSearchScreenDialogScreenModel.Dialog.Migrate -> {
+                MigrateMangaDialog(
+                    current = dialogState.manga!!,
+                    target = dialog.manga,
+                    onClickTitle = {
+                        navigator.push(MangaScreen(dialog.manga.id, true))
+                    },
+                    onDismissRequest = { dialogScreenModel.setDialog(null) },
+                    onComplete = {
+                        if (navigator.lastItem is MangaScreen) {
+                            val lastItem = navigator.lastItem
+                            navigator.popUntil { navigator.items.contains(lastItem) }
+                            navigator.push(MangaScreen(dialog.manga.id))
+                        } else {
+                            navigator.replace(MangaScreen(dialog.manga.id))
+                        }
+                    },
+                )
+            }
+            else -> {}
+        }
     }
 }

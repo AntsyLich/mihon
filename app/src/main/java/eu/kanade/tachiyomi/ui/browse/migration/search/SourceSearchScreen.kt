@@ -26,6 +26,8 @@ import eu.kanade.tachiyomi.ui.browse.source.browse.BrowseSourceScreenModel
 import eu.kanade.tachiyomi.ui.browse.source.browse.SourceFilterDialog
 import eu.kanade.tachiyomi.ui.manga.MangaScreen
 import eu.kanade.tachiyomi.ui.webview.WebViewScreen
+import kotlinx.coroutines.launch
+import mihon.feature.migration.dialog.MigrateMangaDialog
 import mihon.presentation.core.util.collectAsLazyPagingItems
 import tachiyomi.core.common.Constants
 import tachiyomi.domain.manga.model.Manga
@@ -118,6 +120,21 @@ data class SourceSearchScreen(
                     onReset = screenModel::resetFilters,
                     onFilter = { screenModel.search(filters = state.filters) },
                     onUpdate = screenModel::setFilters,
+                )
+            }
+            is BrowseSourceScreenModel.Dialog.Migrate -> {
+                MigrateMangaDialog(
+                    current = oldManga,
+                    target = dialog.target,
+                    onClickTitle = { navigator.push(MangaScreen(dialog.target.id)) },
+                    onDismissRequest = onDismissRequest,
+                    onComplete = {
+                        scope.launch {
+                            navigator.popUntilRoot()
+                            HomeScreen.openTab(HomeScreen.Tab.Browse())
+                            navigator.push(MangaScreen(dialog.target.id))
+                        }
+                    },
                 )
             }
             else -> {}
