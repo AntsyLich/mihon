@@ -205,8 +205,7 @@ class MangaScreen(
                     onDismissRequest = onDismissRequest,
                     onConfirm = { screenModel.toggleFavorite(onRemoved = {}, checkDuplicate = false) },
                     onOpenManga = { navigator.push(MangaScreen(it.id)) },
-                    // TODO(antsy): Properly work out migration on duplicate
-                    onMigrate = { navigator.push(MigrationConfigScreen(it.id)) },
+                    onMigrate = { screenModel.showMigrateDialog(it) },
                 )
             }
             is MangaScreenModel.Dialog.Migrate -> {
