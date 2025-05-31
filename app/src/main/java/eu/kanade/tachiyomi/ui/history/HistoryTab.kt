@@ -101,7 +101,7 @@ data object HistoryTab : Tab {
                     onDismissRequest = onDismissRequest,
                     onConfirm = { screenModel.addFavorite(dialog.manga) },
                     onOpenManga = { navigator.push(MangaScreen(it.id)) },
-                    onMigrate = { screenModel.showMigrateDialog(dialog.manga, it) },
+                    onMigrate = { screenModel.setDialog(HistoryScreenModel.Dialog.Migrate(dialog.manga, it)) },
                 )
             }
             is HistoryScreenModel.Dialog.ChangeCategory -> {

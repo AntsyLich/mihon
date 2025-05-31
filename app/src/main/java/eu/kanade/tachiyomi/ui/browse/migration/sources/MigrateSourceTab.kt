@@ -15,8 +15,15 @@ import eu.kanade.presentation.components.AppBar
 import eu.kanade.presentation.components.TabContent
 import eu.kanade.tachiyomi.ui.browse.migration.manga.MigrateMangaScreen
 import kotlinx.collections.immutable.persistentListOf
+import kotlinx.coroutines.DelicateCoroutinesApi
+import mihon.feature.migration.config.MigrationConfigScreen
+import tachiyomi.core.common.util.lang.launchIO
+import tachiyomi.core.common.util.lang.withUIContext
+import tachiyomi.domain.manga.interactor.GetFavorites
 import tachiyomi.i18n.MR
 import tachiyomi.presentation.core.i18n.stringResource
+import uy.kohesive.injekt.Injekt
+import uy.kohesive.injekt.api.get
 
 @Composable
 fun Screen.migrateSourceTab(): TabContent {
@@ -45,6 +52,18 @@ fun Screen.migrateSourceTab(): TabContent {
                 },
                 onToggleSortingDirection = screenModel::toggleSortingDirection,
                 onToggleSortingMode = screenModel::toggleSortingMode,
+                onClickAll = { source ->
+                    // TODO: Jay wtf, need to clean this up sometime
+                    @OptIn(DelicateCoroutinesApi::class)
+                    launchIO {
+                        val manga = Injekt.get<GetFavorites>().await()
+                        val sourceMangas =
+                            manga.asSequence().filter { it.source == source.id }.map { it.id }.toList()
+                        withUIContext {
+                            navigator.push(MigrationConfigScreen(sourceMangas))
+                        }
+                    }
+                },
             )
         },
     )

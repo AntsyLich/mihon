@@ -29,6 +29,7 @@ import eu.kanade.tachiyomi.ui.manga.MangaScreen
 import eu.kanade.tachiyomi.ui.webview.WebViewScreen
 import kotlinx.coroutines.launch
 import mihon.feature.migration.dialog.MigrateMangaDialog
+import mihon.feature.migration.list.MigrateMangaListScreen
 import mihon.presentation.core.util.collectAsLazyPagingItems
 import tachiyomi.core.common.Constants
 import tachiyomi.domain.manga.model.Manga
@@ -51,10 +52,10 @@ data class MigrateSourceSearchScreen(
             LoadingScreen()
             return
         }
+        val scope = rememberCoroutineScope()
 
         val uriHandler = LocalUriHandler.current
         val navigator = LocalNavigator.currentOrThrow
-        val scope = rememberCoroutineScope()
 
         val screenModel = rememberScreenModel { BrowseSourceScreenModel(sourceId, query) }
         val state by screenModel.state.collectAsState()
@@ -83,7 +84,16 @@ data class MigrateSourceSearchScreen(
             snackbarHost = { SnackbarHost(hostState = snackbarHostState) },
         ) { paddingValues ->
             val openMigrateDialog: (Manga) -> Unit = {
-                screenModel.setDialog(BrowseSourceScreenModel.Dialog.Migrate(target = it, current = currentManga))
+                val migrateListScreen = navigator.items
+                    .filterIsInstance<MigrateMangaListScreen>()
+                    .lastOrNull()
+
+                if (migrateListScreen == null) {
+                    screenModel.setDialog(BrowseSourceScreenModel.Dialog.Migrate(target = it, current = currentManga))
+                } else {
+                    migrateListScreen.newSelectedItem = currentManga.id to it.id
+                    navigator.popUntil { screen -> screen is MigrateMangaListScreen }
+                }
             }
             BrowseSourceContent(
                 source = screenModel.source,
