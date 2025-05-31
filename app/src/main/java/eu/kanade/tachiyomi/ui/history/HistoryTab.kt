@@ -100,9 +100,7 @@ data object HistoryTab : Tab {
                 DuplicateMangaDialog(
                     duplicates = dialog.duplicates,
                     onDismissRequest = onDismissRequest,
-                    onConfirm = {
-                        screenModel.addFavorite(dialog.manga)
-                    },
+                    onConfirm = { screenModel.addFavorite(dialog.manga) },
                     onOpenManga = { navigator.push(MangaScreen(it.id)) },
                     // TODO(antsy): Properly work out migration on duplicate
                     onMigrate = { navigator.push(MigrationConfigScreen(it.id)) },
@@ -122,7 +120,8 @@ data object HistoryTab : Tab {
                 MigrateMangaDialog(
                     current = dialog.current,
                     target = dialog.target,
-                    onClickTitle = { navigator.push(MangaScreen(dialog.target.id)) },
+                    // Initiated from the context of [dialog.target] so we show [dialog.current].
+                    onClickTitle = { navigator.push(MangaScreen(dialog.current.id)) },
                     onDismissRequest = onDismissRequest,
                 )
             }
