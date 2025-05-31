@@ -11,6 +11,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalUriHandler
 import cafe.adriel.voyager.core.model.rememberScreenModel
@@ -27,7 +28,6 @@ import eu.kanade.tachiyomi.ui.home.HomeScreen
 import eu.kanade.tachiyomi.ui.manga.MangaScreen
 import eu.kanade.tachiyomi.ui.webview.WebViewScreen
 import kotlinx.coroutines.launch
-import mihon.core.migration.Migrator.scope
 import mihon.feature.migration.dialog.MigrateMangaDialog
 import mihon.feature.migration.list.MigrateMangaListScreen
 import mihon.presentation.core.util.collectAsLazyPagingItems
@@ -52,6 +52,7 @@ data class MigrateSourceSearchScreen(
             LoadingScreen()
             return
         }
+        val scope = rememberCoroutineScope()
 
         val uriHandler = LocalUriHandler.current
         val navigator = LocalNavigator.currentOrThrow
