@@ -16,7 +16,7 @@ import eu.kanade.presentation.components.TabContent
 import eu.kanade.tachiyomi.ui.browse.migration.manga.MigrateMangaScreen
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.coroutines.DelicateCoroutinesApi
-import mihon.feature.migration.config.MigrateMangaConfigScreen
+import mihon.feature.migration.config.MigrationConfigScreen
 import tachiyomi.core.common.util.lang.launchIO
 import tachiyomi.core.common.util.lang.withUIContext
 import tachiyomi.domain.manga.interactor.GetFavorites
@@ -60,7 +60,7 @@ fun Screen.migrateSourceTab(): TabContent {
                         val sourceMangas =
                             manga.asSequence().filter { it.source == source.id }.map { it.id }.toList()
                         withUIContext {
-                            navigator.push(MigrateMangaConfigScreen(sourceMangas))
+                            navigator.push(MigrationConfigScreen(sourceMangas))
                         }
                     }
                 },

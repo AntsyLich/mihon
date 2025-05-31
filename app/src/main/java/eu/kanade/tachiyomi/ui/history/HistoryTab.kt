@@ -30,7 +30,7 @@ import eu.kanade.tachiyomi.ui.reader.ReaderActivity
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.receiveAsFlow
-import mihon.feature.migration.config.MigrateMangaConfigScreen
+import mihon.feature.migration.config.MigrationConfigScreen
 import tachiyomi.core.common.i18n.stringResource
 import tachiyomi.domain.chapter.model.Chapter
 import tachiyomi.i18n.MR
@@ -104,7 +104,7 @@ data object HistoryTab : Tab {
                     },
                     onOpenManga = { navigator.push(MangaScreen(it.id)) },
                     // TODO(antsy): Properly work out migration on duplicate
-                    onMigrate = { navigator.push(MigrateMangaConfigScreen(it.id)) },
+                    onMigrate = { navigator.push(MigrationConfigScreen(it.id)) },
                 )
             }
             is HistoryScreenModel.Dialog.ChangeCategory -> {

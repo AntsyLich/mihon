@@ -24,13 +24,13 @@ import tachiyomi.i18n.MR
 import uy.kohesive.injekt.injectLazy
 
 @Composable
-fun MigrateMangaConfigScreenSheet(
+fun MigrationConfigScreenSheet(
     onDismissRequest: () -> Unit,
     onStartMigration: (extraParam: String?) -> Unit,
 ) {
     val startMigration = rememberUpdatedState(onStartMigration)
     val state = remember {
-        MigrateMangaConfigScreenSheetState(startMigration)
+        MigrationConfigScreenSheetState(startMigration)
     }
     AdaptiveSheet(onDismissRequest = onDismissRequest) {
         AndroidView(
@@ -44,7 +44,7 @@ fun MigrateMangaConfigScreenSheet(
     }
 }
 
-private class MigrateMangaConfigScreenSheetState(private val onStartMigration: State<(extraParam: String?) -> Unit>) {
+private class MigrationConfigScreenSheetState(private val onStartMigration: State<(extraParam: String?) -> Unit>) {
     private val preferences: SourcePreferences by injectLazy()
 
     /**

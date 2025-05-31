@@ -57,7 +57,8 @@ import eu.kanade.tachiyomi.util.system.toShareIntent
 import eu.kanade.tachiyomi.util.system.toast
 import kotlinx.coroutines.launch
 import logcat.LogPriority
-import mihon.feature.migration.config.MigrateMangaConfigScreen
+import mihon.feature.migration.config.MigrationConfigScreen
+import mihon.feature.migration.config.MigrationConfigScreen
 import tachiyomi.core.common.i18n.stringResource
 import tachiyomi.core.common.util.lang.withIOContext
 import tachiyomi.core.common.util.system.logcat
@@ -160,7 +161,7 @@ class MangaScreen(
             onEditFetchIntervalClicked = screenModel::showSetFetchIntervalDialog.takeIf {
                 successState.manga.favorite
             },
-            onMigrateClicked = { navigator.push(MigrateMangaConfigScreen(successState.manga.id)) }
+            onMigrateClicked = { navigator.push(MigrationConfigScreen(successState.manga.id)) }
                 .takeIf { successState.manga.favorite },
             onEditNotesClicked = { navigator.push(MangaNotesScreen(manga = successState.manga)) },
             onMultiBookmarkClicked = screenModel::bookmarkChapters,
@@ -205,7 +206,7 @@ class MangaScreen(
                     onConfirm = { screenModel.toggleFavorite(onRemoved = {}, checkDuplicate = false) },
                     onOpenManga = { navigator.push(MangaScreen(it.id)) },
                     // TODO(antsy): Properly work out migration on duplicate
-                    onMigrate = { navigator.push(MigrateMangaConfigScreen(it.id)) },
+                    onMigrate = { navigator.push(MigrationConfigScreen(it.id)) },
                 )
             }
 

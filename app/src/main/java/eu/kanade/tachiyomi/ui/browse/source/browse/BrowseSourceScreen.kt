@@ -54,7 +54,7 @@ import eu.kanade.tachiyomi.ui.webview.WebViewScreen
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.receiveAsFlow
-import mihon.feature.migration.config.MigrateMangaConfigScreen
+import mihon.feature.migration.config.MigrationConfigScreen
 import mihon.presentation.core.util.collectAsLazyPagingItems
 import tachiyomi.core.common.Constants
 import tachiyomi.core.common.util.lang.launchIO
@@ -255,7 +255,7 @@ data class BrowseSourceScreen(
                     onConfirm = { screenModel.addFavorite(dialog.manga) },
                     onOpenManga = { navigator.push(MangaScreen(it.id)) },
                     // TODO(antsy): Properly work out migration on duplicate
-                    onMigrate = { navigator.push(MigrateMangaConfigScreen(it.id)) },
+                    onMigrate = { navigator.push(MigrationConfigScreen(it.id)) },
                 )
             }
 
