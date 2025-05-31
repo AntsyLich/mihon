@@ -51,11 +51,8 @@ import eu.kanade.tachiyomi.ui.browse.migration.search.MigrateSearchScreen
 import eu.kanade.tachiyomi.util.system.LocaleHelper
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.coroutines.flow.update
-<<<<<<<< HEAD:app/src/main/java/mihon/feature/migration/config/MigrateMangaConfigScreen.kt
 import kotlinx.coroutines.flow.updateAndGet
 import mihon.feature.migration.list.MigrateMangaListScreen
-========
->>>>>>>> migration-config:app/src/main/java/mihon/feature/migration/config/MigrationConfigScreen.kt
 import sh.calvin.reorderable.ReorderableCollectionItemScope
 import sh.calvin.reorderable.ReorderableItem
 import sh.calvin.reorderable.ReorderableLazyListState
@@ -153,14 +150,10 @@ class MigrationConfigScreen(private val mangaIds: List<Long>) : Screen() {
                 ExtendedFloatingActionButton(
                     text = { Text(text = stringResource(MR.strings.migrationConfigScreen_continueButtonText)) },
                     icon = { Icon(imageVector = Icons.AutoMirrored.Outlined.ArrowForward, contentDescription = null) },
-<<<<<<<< HEAD:app/src/main/java/mihon/feature/migration/config/MigrateMangaConfigScreen.kt
-                    onClick = { continueMigration(true, null) },
-========
                     onClick = {
                         screenModel.saveSources()
                         continueMigration(true, null)
                     },
->>>>>>>> migration-config:app/src/main/java/mihon/feature/migration/config/MigrationConfigScreen.kt
                     expanded = lazyListState.shouldExpandFAB(),
                 )
             },
@@ -217,7 +210,7 @@ class MigrationConfigScreen(private val mangaIds: List<Long>) : Screen() {
         }
 
         if (migrationSheetOpen) {
-            MigrateMangaConfigScreenSheet(
+            MigrationConfigScreenSheet(
                 onDismissRequest = { migrationSheetOpen = false },
                 onStartMigration = { extraParam ->
                     migrationSheetOpen = false
@@ -447,9 +440,6 @@ class MigrationConfigScreen(private val mangaIds: List<Long>) : Screen() {
         val source: Source,
         val isSelected: Boolean,
     ) {
-<<<<<<<< HEAD:app/src/main/java/mihon/feature/migration/config/MigrateMangaConfigScreen.kt
-        val id = source.id
-========
         val id: Long
             inline get() = source.id
 
@@ -457,6 +447,5 @@ class MigrationConfigScreen(private val mangaIds: List<Long>) : Screen() {
             inline get() = source.name
 
         val shortLanguage: String = LocaleHelper.getShortDisplayName(source.lang)
->>>>>>>> migration-config:app/src/main/java/mihon/feature/migration/config/MigrationConfigScreen.kt
     }
 }
