@@ -42,6 +42,21 @@ class SourcePreferences(
         SetMigrateSorting.Direction.ASCENDING,
     )
 
+    fun hideInLibraryItems() = preferenceStore.getBoolean("browse_hide_in_library_items", false)
+
+    fun extensionRepos() = preferenceStore.getStringSet("extension_repos", emptySet())
+
+    fun extensionUpdatesCount() = preferenceStore.getInt("ext_updates_count", 0)
+
+    fun trustedExtensions() = preferenceStore.getStringSet(
+        Preference.appStateKey("trusted_extensions"),
+        emptySet(),
+    )
+
+    fun globalSearchFilterState() = preferenceStore.getBoolean(
+        Preference.appStateKey("has_filters_toggle_state"),
+        false,
+    )
 
     fun migrationSources() = preferenceStore.getLongArray("migration_sources", emptyList())
 
@@ -59,20 +74,4 @@ class SourcePreferences(
     fun hideNotFoundMigration() = preferenceStore.getBoolean("hide_not_found_migration", false)
 
     fun showOnlyUpdatesMigration() = preferenceStore.getBoolean("show_only_updates_migration", false)
-
-    fun hideInLibraryItems() = preferenceStore.getBoolean("browse_hide_in_library_items", false)
-
-    fun extensionRepos() = preferenceStore.getStringSet("extension_repos", emptySet())
-
-    fun extensionUpdatesCount() = preferenceStore.getInt("ext_updates_count", 0)
-
-    fun trustedExtensions() = preferenceStore.getStringSet(
-        Preference.appStateKey("trusted_extensions"),
-        emptySet(),
-    )
-
-    fun globalSearchFilterState() = preferenceStore.getBoolean(
-        Preference.appStateKey("has_filters_toggle_state"),
-        false,
-    )
 }
