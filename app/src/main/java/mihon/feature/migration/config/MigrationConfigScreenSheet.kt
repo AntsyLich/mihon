@@ -74,20 +74,10 @@ private class MigrationConfigScreenSheetState(private val onStartMigration: Stat
         }
         binding.sourceGroup.bindToPreference(preferences.useSourceWithMost())
 
-        binding.skipStep.isChecked = preferences.skipMigrationConfigScreen().get()
         binding.HideNotFoundManga.isChecked = preferences.hideNotFoundMigration().get()
         binding.OnlyShowUpdates.isChecked = preferences.showOnlyUpdatesMigration().get()
-        binding.skipStep.setOnCheckedChangeListener { _, isChecked ->
-            if (isChecked) {
-                binding.root.context.toast(
-                    MR.strings.pre_migration_skip_toast,
-                    Toast.LENGTH_LONG,
-                )
-            }
-        }
 
         binding.migrateBtn.setOnClickListener {
-            preferences.skipMigrationConfigScreen().set(binding.skipStep.isChecked)
             preferences.hideNotFoundMigration().set(binding.HideNotFoundManga.isChecked)
             preferences.showOnlyUpdatesMigration().set(binding.OnlyShowUpdates.isChecked)
             onStartMigration.value(

@@ -22,7 +22,6 @@ import androidx.compose.material3.ListItemDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
@@ -51,7 +50,6 @@ import eu.kanade.tachiyomi.ui.browse.migration.search.MigrateSearchScreen
 import eu.kanade.tachiyomi.util.system.LocaleHelper
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.coroutines.flow.update
-import kotlinx.coroutines.flow.updateAndGet
 import mihon.feature.migration.list.MigrateMangaListScreen
 import sh.calvin.reorderable.ReorderableCollectionItemScope
 import sh.calvin.reorderable.ReorderableItem
@@ -99,9 +97,6 @@ class MigrationConfigScreen(private val mangaIds: List<Long>) : Screen() {
         }
 
         if (state.isLoading) {
-            LaunchedEffect(state.skipPreMigration) {
-                if (state.skipPreMigration) continueMigration(false, null)
-            }
             LoadingScreen()
             return
         }
@@ -320,11 +315,6 @@ class MigrationConfigScreen(private val mangaIds: List<Long>) : Screen() {
 
         init {
             screenModelScope.launchIO {
-                val skipPreMigration = mutableState.updateAndGet {
-                    it.copy(skipPreMigration = sourcePreferences.skipMigrationConfigScreen().get())
-                }
-                    .skipPreMigration
-                if (skipPreMigration) return@launchIO
                 initSources()
                 mutableState.update { it.copy(isLoading = false) }
             }
@@ -424,7 +414,6 @@ class MigrationConfigScreen(private val mangaIds: List<Long>) : Screen() {
 
         data class State(
             val isLoading: Boolean = true,
-            val skipPreMigration: Boolean = false,
             val sources: List<MigrationSource> = emptyList(),
         )
 

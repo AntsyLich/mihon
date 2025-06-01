@@ -56,8 +56,6 @@ class SourcePreferences(
 
     fun useSourceWithMost() = preferenceStore.getBoolean("use_source_with_most", false)
 
-    fun skipMigrationConfigScreen() = preferenceStore.getBoolean(Preference.appStateKey("skip_pre_migration"), false)
-
     fun hideNotFoundMigration() = preferenceStore.getBoolean("hide_not_found_migration", false)
 
     fun showOnlyUpdatesMigration() = preferenceStore.getBoolean("show_only_updates_migration", false)

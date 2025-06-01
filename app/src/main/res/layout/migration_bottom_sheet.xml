@@ -43,7 +43,8 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:orientation="horizontal"
-                app:constraint_referenced_ids="mig_chapters,mig_categories,mig_tracking,mig_custom_cover,mig_extra,mig_delete_downloaded,mig_notes"
+                android:paddingHorizontal="8dp"
+                app:constraint_referenced_ids="mig_chapters,mig_categories,mig_custom_cover,mig_notes,mig_delete_downloaded"
                 app:flow_horizontalBias="0"
                 app:flow_horizontalGap="8dp"
                 app:flow_horizontalStyle="packed"
@@ -68,13 +69,6 @@
                 android:text="@string/categories" />
 
             <CheckBox
-                android:id="@+id/mig_tracking"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:checked="true"
-                android:text="@string/track" />
-
-            <CheckBox
                 android:id="@+id/mig_custom_cover"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -82,11 +76,11 @@
                 android:text="@string/custom_cover" />
 
             <CheckBox
-                android:id="@+id/mig_extra"
+                android:id="@+id/mig_notes"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:checked="true"
-                android:text="@string/extra" />
+                android:text="@string/action_notes" />
 
             <CheckBox
                 android:id="@+id/mig_delete_downloaded"
@@ -94,13 +88,6 @@
                 android:layout_height="wrap_content"
                 android:checked="true"
                 android:text="@string/delete_downloaded" />
-
-            <CheckBox
-                android:id="@+id/mig_notes"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:checked="true"
-                android:text="@string/action_notes" />
         </androidx.constraintlayout.widget.ConstraintLayout>
 
         <View
@@ -165,8 +152,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
-            android:paddingStart="16dp"
-            android:paddingEnd="16dp"
+            android:paddingHorizontal="8dp"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/sourceGroup_divider">
@@ -176,18 +162,9 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="16dp"
-                android:paddingHorizontal="16.dp"
+                android:paddingHorizontal="4dp"
                 android:paddingVertical="16dp"
                 android:text="@string/use_intelligent_search" />
-
-            <com.google.android.material.materialswitch.MaterialSwitch
-                android:id="@+id/extra_search_param"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="8dp"
-                android:paddingHorizontal="16.dp"
-                android:paddingVertical="16dp"
-                android:text="@string/include_extra_search_parameter" />
 
             <EditText
                 android:id="@+id/extra_search_param_text"
@@ -198,23 +175,15 @@
                 android:hint="@string/search_parameter"
                 android:importantForAutofill="no"
                 android:inputType="textPersonName"
+                android:minHeight="48dp"
                 android:textSize="16sp" />
-
-            <com.google.android.material.materialswitch.MaterialSwitch
-                android:id="@+id/skip_step"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="8dp"
-                android:paddingHorizontal="16.dp"
-                android:paddingVertical="16dp"
-                android:text="@string/skip_this_step_next_time" />
 
             <com.google.android.material.materialswitch.MaterialSwitch
                 android:id="@+id/Hide_not_found_manga"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="8dp"
-                android:paddingHorizontal="16.dp"
+                android:paddingHorizontal="4dp"
                 android:paddingVertical="16dp"
                 android:text="@string/hide_not_found_entries" />
 
@@ -224,7 +193,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="8dp"
                 android:layout_marginBottom="82dp"
-                android:paddingHorizontal="16.dp"
+                android:paddingHorizontal="4dp"
                 android:paddingVertical="16dp"
                 android:text="@string/only_show_updated_entries" />
         </LinearLayout>
