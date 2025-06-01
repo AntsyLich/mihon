@@ -19,20 +19,17 @@ import mihon.feature.migration.list.components.MigrationExitDialog
 import mihon.feature.migration.list.components.MigrationMangaDialog
 import mihon.feature.migration.list.components.MigrationProgressDialog
 import mihon.feature.migration.list.models.MigratingManga
-import mihon.feature.migration.list.models.MigrationProcedureConfig
-import mihon.feature.migration.list.models.MigrationType
 import tachiyomi.core.common.i18n.pluralStringResource
 import tachiyomi.core.common.util.lang.withUIContext
 import tachiyomi.i18n.MR
 
-class MigrateMangaListScreen(private val config: MigrationProcedureConfig) : Screen() {
-    constructor(mangaIds: List<Long>, extraParams: String?): this(MigrationProcedureConfig(MigrationType.MangaList(mangaIds), extraParams))
+class MigrateMangaListScreen(private val mangaIds: List<Long>, private val extraSearchParams: String?) : Screen() {
 
     var newSelectedItem: Pair<Long, Long>? = null
 
     @Composable
     override fun Content() {
-        val screenModel = rememberScreenModel { MigrateMangaListScreenModel(config) }
+        val screenModel = rememberScreenModel { MigrateMangaListScreenModel(mangaIds, extraSearchParams) }
         val items by screenModel.migratingItems.collectAsState()
         val migrationDone by screenModel.migrationDone.collectAsState()
         val unfinishedCount by screenModel.unfinishedCount.collectAsState()

@@ -77,11 +77,4 @@ class SourcePreferences(
         Preference.appStateKey("has_filters_toggle_state"),
         false,
     )
-
-    fun migrationFlags() = preferenceStore.getObjectFromInt(
-        key = "migrate_flags",
-        defaultValue = MigrationFlag.entries.toSet(),
-        serializer = { MigrationFlag.toBit(it) },
-        deserializer = { value: Int -> MigrationFlag.fromBit(value) },
-    )
 }
