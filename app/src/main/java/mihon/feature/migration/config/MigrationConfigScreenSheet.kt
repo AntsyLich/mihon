@@ -4,7 +4,6 @@ import android.view.LayoutInflater
 import android.widget.CompoundButton
 import android.widget.RadioButton
 import android.widget.RadioGroup
-import android.widget.Toast
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.State
@@ -16,11 +15,9 @@ import androidx.core.view.isVisible
 import eu.kanade.domain.source.service.SourcePreferences
 import eu.kanade.presentation.components.AdaptiveSheet
 import eu.kanade.tachiyomi.databinding.MigrationBottomSheetBinding
-import eu.kanade.tachiyomi.util.system.toast
 import mihon.domain.migration.models.MigrationFlag
 import tachiyomi.core.common.preference.Preference
 import tachiyomi.core.common.util.lang.toLong
-import tachiyomi.i18n.MR
 import uy.kohesive.injekt.injectLazy
 
 @Composable
@@ -61,17 +58,12 @@ private class MigrationConfigScreenSheetState(private val onStartMigration: Stat
 
         binding.migChapters.setOnCheckedChangeListener { _, _ -> setFlags(binding) }
         binding.migCategories.setOnCheckedChangeListener { _, _ -> setFlags(binding) }
-        binding.migTracking.setOnCheckedChangeListener { _, _ -> setFlags(binding) }
         binding.migCustomCover.setOnCheckedChangeListener { _, _ -> setFlags(binding) }
-        binding.migExtra.setOnCheckedChangeListener { _, _ -> setFlags(binding) }
         binding.migDeleteDownloaded.setOnCheckedChangeListener { _, _ -> setFlags(binding) }
         binding.migNotes.setOnCheckedChangeListener { _, _ -> setFlags(binding) }
 
         binding.useSmartSearch.bindToPreference(preferences.smartMigration())
         binding.extraSearchParamText.isVisible = false
-        binding.extraSearchParam.setOnCheckedChangeListener { _, isChecked ->
-            binding.extraSearchParamText.isVisible = isChecked
-        }
         binding.sourceGroup.bindToPreference(preferences.useSourceWithMost())
 
         binding.HideNotFoundManga.isChecked = preferences.hideNotFoundMigration().get()
