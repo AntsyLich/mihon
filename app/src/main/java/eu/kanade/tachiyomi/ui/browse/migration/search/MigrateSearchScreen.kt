@@ -11,13 +11,13 @@ import eu.kanade.presentation.util.Screen
 import eu.kanade.tachiyomi.ui.browse.source.globalsearch.SearchScreenModel
 import eu.kanade.tachiyomi.ui.manga.MangaScreen
 import mihon.feature.migration.dialog.MigrateMangaDialog
+import mihon.feature.migration.list.MigrateMangaListScreen
 
 class MigrateSearchScreen(private val mangaId: Long) : Screen() {
 
     @Composable
     override fun Content() {
         val navigator = LocalNavigator.currentOrThrow
-
         val screenModel = rememberScreenModel { MigrateSearchScreenModel(mangaId = mangaId) }
         val state by screenModel.state.collectAsState()
 
@@ -31,7 +31,18 @@ class MigrateSearchScreen(private val mangaId: Long) : Screen() {
             onChangeSearchFilter = screenModel::setSourceFilter,
             onToggleResults = screenModel::toggleFilterResults,
             onClickSource = { navigator.push(MigrateSourceSearchScreen(state.from!!, it.id, state.searchQuery)) },
-            onClickItem = { screenModel.setMigrateDialog(mangaId, it) },
+            onClickItem = {
+                val migrateListScreen = navigator.items
+                    .filterIsInstance<MigrateMangaListScreen>()
+                    .lastOrNull()
+
+                if (migrateListScreen == null) {
+                    screenModel.setMigrateDialog(mangaId, it)
+                } else {
+                    migrateListScreen.newSelectedItem = mangaId to it.id
+                    navigator.popUntil { screen -> screen is MigrateMangaListScreen }
+                }
+            },
             onLongClickItem = { navigator.push(MangaScreen(it.id, true)) },
         )
 
