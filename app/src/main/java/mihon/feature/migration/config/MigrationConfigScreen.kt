@@ -72,7 +72,7 @@ import uy.kohesive.injekt.api.get
 
 class MigrationConfigScreen(private val mangaIds: List<Long>) : Screen() {
 
-    constructor(mangaId: Long): this(listOf(mangaId))
+    constructor(mangaId: Long) : this(listOf(mangaId))
 
     @Composable
     override fun Content() {

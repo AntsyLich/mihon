@@ -174,7 +174,7 @@ private fun MigrateSourceItem(
             Row(
                 modifier = Modifier.height(IntrinsicSize.Min),
                 verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(4.dp)
+                horizontalArrangement = Arrangement.spacedBy(4.dp),
             ) {
                 BadgeGroup {
                     Badge(text = "$count")
@@ -185,7 +185,7 @@ private fun MigrateSourceItem(
                 )
                 VerticalDivider(
                     thickness = 2.dp,
-                    modifier = Modifier.height(32.dp)
+                    modifier = Modifier.height(32.dp),
                 )
                 Text(
                     text = stringResource(MR.strings.all),
@@ -194,7 +194,7 @@ private fun MigrateSourceItem(
                     modifier = Modifier
                         .clip(MaterialTheme.shapes.medium)
                         .clickable(onClick = onClickAll)
-                        .padding(8.dp)
+                        .padding(8.dp),
                 )
             }
         },

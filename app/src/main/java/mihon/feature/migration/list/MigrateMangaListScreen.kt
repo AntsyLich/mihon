@@ -114,8 +114,7 @@ class MigrateMangaListScreen(private val mangaIds: List<Long>, private val extra
         )
 
         val onDismissRequest = { screenModel.dialog.value = null }
-        when
-            (
+        when (
             @Suppress("NAME_SHADOWING")
             val dialog = dialog
         ) {
