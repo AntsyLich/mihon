@@ -23,13 +23,13 @@ import tachiyomi.core.common.i18n.pluralStringResource
 import tachiyomi.core.common.util.lang.withUIContext
 import tachiyomi.i18n.MR
 
-class MigrateMangaListScreen(private val mangaIds: List<Long>, private val extraSearchParams: String?) : Screen() {
+class MigrateMangaListScreen(private val mangaIds: List<Long>, private val extraSearchQuery: String?) : Screen() {
 
     var newSelectedItem: Pair<Long, Long>? = null
 
     @Composable
     override fun Content() {
-        val screenModel = rememberScreenModel { MigrateMangaListScreenModel(mangaIds, extraSearchParams) }
+        val screenModel = rememberScreenModel { MigrateMangaListScreenModel(mangaIds, extraSearchQuery) }
         val items by screenModel.migratingItems.collectAsState()
         val migrationDone by screenModel.migrationDone.collectAsState()
         val unfinishedCount by screenModel.unfinishedCount.collectAsState()

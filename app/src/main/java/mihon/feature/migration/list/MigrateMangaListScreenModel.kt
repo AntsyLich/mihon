@@ -48,7 +48,7 @@ import java.util.concurrent.atomic.AtomicInteger
 
 class MigrateMangaListScreenModel(
     mangaIds: List<Long>,
-    extraSearchParams: String?,
+    extraSearchQuery: String?,
     private val preferences: SourcePreferences = Injekt.get(),
     private val sourceManager: SourceManager = Injekt.get(),
     private val getManga: GetManga = Injekt.get(),
@@ -61,7 +61,7 @@ class MigrateMangaListScreenModel(
 
     private var mangaIds by mutableStateOf(mangaIds)
 
-    private val smartSearchEngine = SmartSourceSearchEngine(extraSearchParams)
+    private val smartSearchEngine = SmartSourceSearchEngine(extraSearchQuery)
 
     val migratingItems = MutableStateFlow<ImmutableList<MigratingManga>?>(null)
     val migrationDone = MutableStateFlow(false)

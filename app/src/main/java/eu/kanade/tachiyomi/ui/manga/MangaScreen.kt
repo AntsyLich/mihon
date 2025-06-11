@@ -161,8 +161,9 @@ class MangaScreen(
             onEditFetchIntervalClicked = screenModel::showSetFetchIntervalDialog.takeIf {
                 successState.manga.favorite
             },
-            onMigrateClicked = { navigator.push(MigrationConfigScreen(successState.manga.id)) }
-                .takeIf { successState.manga.favorite },
+            onMigrateClicked = {
+                navigator.push(MigrationConfigScreen(successState.manga.id))
+            }.takeIf { successState.manga.favorite },
             onEditNotesClicked = { navigator.push(MangaNotesScreen(manga = successState.manga)) },
             onMultiBookmarkClicked = screenModel::bookmarkChapters,
             onMultiMarkAsReadClicked = screenModel::markChaptersRead,
@@ -208,6 +209,7 @@ class MangaScreen(
                     onMigrate = { screenModel.showMigrateDialog(it) },
                 )
             }
+
             is MangaScreenModel.Dialog.Migrate -> {
                 MigrateMangaDialog(
                     current = dialog.current,
