@@ -4,7 +4,6 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.FlowRow
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -27,7 +26,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import eu.kanade.domain.source.service.SourcePreferences
@@ -76,7 +74,7 @@ fun MigrationConfigScreenSheet(
                         .fillMaxWidth()
                         .padding(horizontal = MaterialTheme.padding.medium)
                         .padding(bottom = MaterialTheme.padding.extraSmall),
-                    horizontalArrangement = Arrangement.spacedBy(MaterialTheme.padding.small)
+                    horizontalArrangement = Arrangement.spacedBy(MaterialTheme.padding.small),
                 ) {
                     MigrationFlag.entries.forEach { flag ->
                         if (flag == MigrationFlag.REMOVE_DOWNLOAD) return@forEach
@@ -96,14 +94,14 @@ fun MigrationConfigScreenSheet(
                         )
                     }
                 }
-                val removeDownloadsSelected = MigrationFlag.REMOVE_DOWNLOAD in migrationFlags
+                val removeDownloads = MigrationFlag.REMOVE_DOWNLOAD in migrationFlags
                 MigrationSheetSwitchItem(
                     title = stringResource(MR.strings.migrationConfigScreen_removeDownloadsTitle),
                     subtitle = null,
-                    checked = removeDownloadsSelected,
+                    checked = removeDownloads,
                     onClick = {
                         preferences.migrationFlags().getAndSet {
-                            if (removeDownloadsSelected) {
+                            if (removeDownloads) {
                                 it - MigrationFlag.REMOVE_DOWNLOAD
                             } else {
                                 it + MigrationFlag.REMOVE_DOWNLOAD
@@ -116,15 +114,19 @@ fun MigrationConfigScreenSheet(
                     value = extraSearchQuery,
                     onValueChange = { extraSearchQuery = it },
                     label = { Text(stringResource(MR.strings.migrationConfigScreen_additionalSearchQueryLabel)) },
-                    placeholder = { Text(stringResource(MR.strings.migrationConfigScreen_additionalSearchQueryPlaceholder)) },
-                    supportingText = { Text(stringResource(MR.strings.migrationConfigScreen_additionalSearchQuerySupportingText)) },
+                    placeholder = {
+                        Text(stringResource(MR.strings.migrationConfigScreen_additionalSearchQueryPlaceholder))
+                    },
+                    supportingText = {
+                        Text(stringResource(MR.strings.migrationConfigScreen_additionalSearchQuerySupportingText))
+                    },
                     singleLine = true,
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(
                             horizontal = MaterialTheme.padding.medium,
                             vertical = MaterialTheme.padding.extraSmall,
-                        )
+                        ),
                 )
                 MigrationSheetSwitchItem(
                     title = stringResource(MR.strings.migrationConfigScreen_hideUnmatchedTitle),
@@ -145,7 +147,7 @@ fun MigrationConfigScreenSheet(
                 )
                 MigrationSheetSwitchItem(
                     title = stringResource(MR.strings.migrationConfigScreen_prioritizeByChaptersTitle),
-                    subtitle = null, // No subtitle string key provided for this one
+                    subtitle = null,
                     preference = preferences.migrationPrioritizeByChapters(),
                 )
             }
@@ -176,7 +178,7 @@ private fun MigrationSheetSwitchItem(
         title = title,
         subtitle = subtitle,
         checked = checked,
-        onClick = { preference.toggle() }
+        onClick = { preference.toggle() },
     )
 }
 
@@ -211,22 +213,37 @@ private fun MigrationSheetWarningItem(
     text: String,
 ) {
     ListItem(
+//<<<<<<< HEAD
+//        headlineContent = {
+//            Row(
+//                horizontalArrangement = Arrangement.spacedBy(MaterialTheme.padding.medium),
+//                verticalAlignment = Alignment.CenterVertically
+//            ) {
+//                Icon(
+//                    imageVector = Icons.Outlined.Warning,
+//                    contentDescription = null,
+//                    tint = MaterialTheme.colorScheme.active,
+//                )
+//                Text(
+//                    text = text,
+//                    color = MaterialTheme.colorScheme.error,
+//                    modifier = Modifier
+//                )
+//            }
+//=======
+        leadingContent = {
+            Icon(
+                imageVector = Icons.Outlined.Warning,
+                contentDescription = null,
+                tint = MaterialTheme.colorScheme.active,
+            )
+        },
         headlineContent = {
-            Row(
-                horizontalArrangement = Arrangement.spacedBy(MaterialTheme.padding.medium),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Icon(
-                    imageVector = Icons.Outlined.Warning,
-                    contentDescription = null,
-                    tint = MaterialTheme.colorScheme.active,
-                )
-                Text(
-                    text = text,
-                    color = MaterialTheme.colorScheme.error,
-                    modifier = Modifier
-                )
-            }
+            Text(
+                text = text,
+                color = MaterialTheme.colorScheme.error,
+                modifier = Modifier,
+            )
         },
         colors = ListItemDefaults.colors(containerColor = Color.Transparent),
     )

@@ -61,17 +61,17 @@ class SourcePreferences(
     fun migrationSources() = preferenceStore.getLongArray("migration_sources", emptyList())
 
     fun migrationFlags() = preferenceStore.getObjectFromInt(
-        key = "migrate_flags",
+        key = "migration_flags",
         defaultValue = MigrationFlag.entries.toSet(),
         serializer = { MigrationFlag.toBit(it) },
         deserializer = { value: Int -> MigrationFlag.fromBit(value) },
     )
 
-    fun migrationDeepSearchMode() = preferenceStore.getBoolean("smart_migrate", false)
+    fun migrationDeepSearchMode() = preferenceStore.getBoolean("migration_deep_search", false)
 
-    fun migrationPrioritizeByChapters() = preferenceStore.getBoolean("use_source_with_most", false)
+    fun migrationPrioritizeByChapters() = preferenceStore.getBoolean("migration_prioritize_by_chapters", false)
 
-    fun migrationHideUnmatched() = preferenceStore.getBoolean("hide_not_found_migration", false)
+    fun migrationHideUnmatched() = preferenceStore.getBoolean("migration_hide_unmatched", false)
 
-    fun migrationHideWithoutUpdates() = preferenceStore.getBoolean("show_only_updates_migration", false)
+    fun migrationHideWithoutUpdates() = preferenceStore.getBoolean("migration_hide_without_updates", false)
 }
