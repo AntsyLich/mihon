@@ -213,24 +213,6 @@ private fun MigrationSheetWarningItem(
     text: String,
 ) {
     ListItem(
-//<<<<<<< HEAD
-//        headlineContent = {
-//            Row(
-//                horizontalArrangement = Arrangement.spacedBy(MaterialTheme.padding.medium),
-//                verticalAlignment = Alignment.CenterVertically
-//            ) {
-//                Icon(
-//                    imageVector = Icons.Outlined.Warning,
-//                    contentDescription = null,
-//                    tint = MaterialTheme.colorScheme.active,
-//                )
-//                Text(
-//                    text = text,
-//                    color = MaterialTheme.colorScheme.error,
-//                    modifier = Modifier
-//                )
-//            }
-//=======
         leadingContent = {
             Icon(
                 imageVector = Icons.Outlined.Warning,
