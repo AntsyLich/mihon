@@ -22,7 +22,6 @@ import androidx.compose.material3.ListItemDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
@@ -99,9 +98,6 @@ class MigrationConfigScreen(private val mangaIds: List<Long>) : Screen() {
         }
 
         if (state.isLoading) {
-            LaunchedEffect(state.skipMigrationConfig) {
-                if (state.skipMigrationConfig) continueMigration(openSheet = false, extraSearchQuery = null)
-            }
             LoadingScreen()
             return
         }
@@ -211,6 +207,7 @@ class MigrationConfigScreen(private val mangaIds: List<Long>) : Screen() {
 
         if (migrationSheetOpen) {
             MigrationConfigScreenSheet(
+                preferences = screenModel.sourcePreferences,
                 onDismissRequest = { migrationSheetOpen = false },
                 onStartMigration = { extraSearchQuery ->
                     migrationSheetOpen = false
@@ -320,9 +317,6 @@ class MigrationConfigScreen(private val mangaIds: List<Long>) : Screen() {
 
         init {
             screenModelScope.launchIO {
-                val skipMigrationConfig = sourcePreferences.skipMigrationConfig().get()
-                mutableState.update { it.copy(skipMigrationConfig = skipMigrationConfig) }
-                if (skipMigrationConfig) return@launchIO
                 initSources()
                 mutableState.update { it.copy(isLoading = false) }
             }
@@ -422,7 +416,6 @@ class MigrationConfigScreen(private val mangaIds: List<Long>) : Screen() {
 
         data class State(
             val isLoading: Boolean = true,
-            val skipMigrationConfig: Boolean = false,
             val sources: List<MigrationSource> = emptyList(),
         )
 

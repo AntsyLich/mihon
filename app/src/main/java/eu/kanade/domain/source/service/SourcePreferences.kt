@@ -67,13 +67,11 @@ class SourcePreferences(
         deserializer = { value: Int -> MigrationFlag.fromBit(value) },
     )
 
-    fun skipMigrationConfig() = preferenceStore.getBoolean(Preference.appStateKey("skip_migration_config"), false)
+    fun migrationDeepSearchMode() = preferenceStore.getBoolean("smart_migrate", false)
 
-    fun smartMigration() = preferenceStore.getBoolean("smart_migrate", false)
+    fun migrationPrioritizeByChapters() = preferenceStore.getBoolean("use_source_with_most", false)
 
-    fun useSourceWithMost() = preferenceStore.getBoolean("use_source_with_most", false)
+    fun migrationHideUnmatched() = preferenceStore.getBoolean("hide_not_found_migration", false)
 
-    fun hideNotFoundMigration() = preferenceStore.getBoolean("hide_not_found_migration", false)
-
-    fun showOnlyUpdatesMigration() = preferenceStore.getBoolean("show_only_updates_migration", false)
+    fun migrationHideWithoutUpdates() = preferenceStore.getBoolean("show_only_updates_migration", false)
 }

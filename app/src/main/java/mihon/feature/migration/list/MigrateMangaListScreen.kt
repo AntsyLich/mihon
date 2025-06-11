@@ -47,7 +47,7 @@ class MigrateMangaListScreen(private val mangaIds: List<Long>, private val extra
                         manualMigrations,
                     ),
                 )
-                if (!screenModel.hideNotFound) {
+                if (!screenModel.hideUnmatched) {
                     navigator.pop()
                 }
             }

@@ -69,8 +69,8 @@ class MigrateMangaListScreenModel(
 
     val manualMigrations = MutableStateFlow(0)
 
-    val hideNotFound = preferences.hideNotFoundMigration().get()
-    val showOnlyUpdates = preferences.showOnlyUpdatesMigration().get()
+    val hideUnmatched = preferences.migrationHideUnmatched().get()
+    private val hideWithoutUpdates = preferences.migrationHideWithoutUpdates().get()
 
     val navigateOut = MutableSharedFlow<Unit>()
 
@@ -121,8 +121,8 @@ class MigrateMangaListScreenModel(
 
     private suspend fun runMigrations(mangas: List<MigratingManga>) {
         unfinishedCount.value = mangas.size
-        val useSourceWithMost = preferences.useSourceWithMost().get()
-        val useSmartSearch = preferences.smartMigration().get()
+        val prioritizeByChapters = preferences.migrationPrioritizeByChapters().get()
+        val deepSearchMode = preferences.migrationDeepSearchMode().get()
 
         val sources = getMigrationSources()
         for (manga in mangas) {
@@ -143,7 +143,7 @@ class MigrateMangaListScreenModel(
                         } else {
                             sources.filter { it.id != mangaSource.id }
                         }
-                        if (useSourceWithMost) {
+                        if (prioritizeByChapters) {
                             val sourceSemaphore = Semaphore(3)
                             val processedSources = AtomicInteger()
 
@@ -151,7 +151,7 @@ class MigrateMangaListScreenModel(
                                 async async2@{
                                     sourceSemaphore.withPermit {
                                         try {
-                                            val searchResult = if (useSmartSearch) {
+                                            val searchResult = if (deepSearchMode) {
                                                 smartSearchEngine.smartSearch(source, mangaObj.title)
                                             } else {
                                                 smartSearchEngine.normalSearch(source, mangaObj.title)
@@ -187,7 +187,7 @@ class MigrateMangaListScreenModel(
                         } else {
                             validSources.forEachIndexed { index, source ->
                                 val searchResult = try {
-                                    val searchResult = if (useSmartSearch) {
+                                    val searchResult = if (deepSearchMode) {
                                         smartSearchEngine.smartSearch(source, mangaObj.title)
                                     } else {
                                         smartSearchEngine.normalSearch(source, mangaObj.title)
@@ -240,11 +240,11 @@ class MigrateMangaListScreenModel(
                 } else {
                     SearchResult.Result(result.id)
                 }
-                if (result == null && hideNotFound) {
+                if (result == null && hideUnmatched) {
                     removeManga(manga)
                 }
                 if (result != null &&
-                    showOnlyUpdates &&
+                    hideWithoutUpdates &&
                     (getChapterInfo(result.id).latestChapter ?: 0.0) <= (manga.chapterInfo.latestChapter ?: 0.0)
                 ) {
                     removeManga(manga)
