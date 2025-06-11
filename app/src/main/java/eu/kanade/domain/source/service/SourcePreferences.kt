@@ -67,6 +67,8 @@ class SourcePreferences(
         deserializer = { value: Int -> MigrationFlag.fromBit(value) },
     )
 
+    fun skipMigrationConfig() = preferenceStore.getBoolean(Preference.appStateKey("skip_migration_config"), false)
+
     fun smartMigration() = preferenceStore.getBoolean("smart_migrate", false)
 
     fun useSourceWithMost() = preferenceStore.getBoolean("use_source_with_most", false)

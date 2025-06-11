@@ -22,6 +22,7 @@ import androidx.compose.material3.ListItemDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
@@ -77,19 +78,20 @@ class MigrationConfigScreen(private val mangaIds: List<Long>) : Screen() {
     @Composable
     override fun Content() {
         val navigator = LocalNavigator.currentOrThrow
+
         val screenModel = rememberScreenModel { ScreenModel() }
         val state by screenModel.state.collectAsState()
 
         var migrationSheetOpen by rememberSaveable { mutableStateOf(false) }
 
-        val continueMigration: (showSheet: Boolean, extraParams: String?) -> Unit = f@{ showSheet, extraParams ->
+        fun continueMigration(openSheet: Boolean, extraSearchQuery: String?) {
             val mangaId = mangaIds.singleOrNull()
-            if (mangaId == null && showSheet) {
+            if (mangaId == null && openSheet) {
                 migrationSheetOpen = true
-                return@f
+                return
             }
             val screen = if (mangaId == null) {
-                MigrateMangaListScreen(mangaIds, extraParams)
+                MigrateMangaListScreen(mangaIds, extraSearchQuery)
             } else {
                 MigrateSearchScreen(mangaId)
             }
@@ -97,6 +99,9 @@ class MigrationConfigScreen(private val mangaIds: List<Long>) : Screen() {
         }
 
         if (state.isLoading) {
+            LaunchedEffect(state.skipMigrationConfig) {
+                if (state.skipMigrationConfig) continueMigration(openSheet = false, extraSearchQuery = null)
+            }
             LoadingScreen()
             return
         }
@@ -147,7 +152,7 @@ class MigrationConfigScreen(private val mangaIds: List<Long>) : Screen() {
                     icon = { Icon(imageVector = Icons.AutoMirrored.Outlined.ArrowForward, contentDescription = null) },
                     onClick = {
                         screenModel.saveSources()
-                        continueMigration(true, null)
+                        continueMigration(openSheet = true, extraSearchQuery = null)
                     },
                     expanded = lazyListState.shouldExpandFAB(),
                 )
@@ -207,9 +212,9 @@ class MigrationConfigScreen(private val mangaIds: List<Long>) : Screen() {
         if (migrationSheetOpen) {
             MigrationConfigScreenSheet(
                 onDismissRequest = { migrationSheetOpen = false },
-                onStartMigration = { extraParam ->
+                onStartMigration = { extraSearchQuery ->
                     migrationSheetOpen = false
-                    continueMigration(false, extraParam)
+                    continueMigration(openSheet = false, extraSearchQuery = extraSearchQuery)
                 },
             )
         }
@@ -309,12 +314,15 @@ class MigrationConfigScreen(private val mangaIds: List<Long>) : Screen() {
     }
 
     private class ScreenModel(
+        val sourcePreferences: SourcePreferences = Injekt.get(),
         private val sourceManager: SourceManager = Injekt.get(),
-        private val sourcePreferences: SourcePreferences = Injekt.get(),
     ) : StateScreenModel<ScreenModel.State>(State()) {
 
         init {
             screenModelScope.launchIO {
+                val skipMigrationConfig = sourcePreferences.skipMigrationConfig().get()
+                mutableState.update { it.copy(skipMigrationConfig = skipMigrationConfig) }
+                if (skipMigrationConfig) return@launchIO
                 initSources()
                 mutableState.update { it.copy(isLoading = false) }
             }
@@ -414,6 +422,7 @@ class MigrationConfigScreen(private val mangaIds: List<Long>) : Screen() {
 
         data class State(
             val isLoading: Boolean = true,
+            val skipMigrationConfig: Boolean = false,
             val sources: List<MigrationSource> = emptyList(),
         )
 
