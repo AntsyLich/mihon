@@ -1,0 +1,9 @@
+CREATE TABLE manga_category(
+    manga_id INTEGER NOT NULL,
+    category_id INTEGER NOT NULL,
+    UNIQUE(manga_id, category_id) ON CONFLICT IGNORE,
+    FOREIGN KEY(category_id) REFERENCES category(id)
+    ON DELETE CASCADE,
+    FOREIGN KEY(manga_id) REFERENCES manga(id)
+    ON DELETE CASCADE
+);

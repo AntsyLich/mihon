@@ -1,0 +1,6 @@
+CREATE TABLE category(
+    id INTEGER NOT NULL PRIMARY KEY,
+    name TEXT NOT NULL UNIQUE,
+    `order` INTEGER NOT NULL UNIQUE,
+    flags INTEGER NOT NULL
+);

@@ -1,0 +1,28 @@
+import eu.kanade.tachiyomi.source.model.UpdateStrategy;
+import kotlin.collections.List;
+import kotlin.Boolean;
+import kotlin.String;
+
+CREATE TABLE manga(
+    `id` INTEGER NOT NULL PRIMARY KEY,
+    source_id INTEGER NOT NULL,
+    remote_url TEXT NOT NULL,
+    remote_title TEXT NOT NULL,
+    remote_cover TEXT,
+    remote_artist TEXT,
+    remote_author TEXT,
+    remote_status INTEGER NOT NULL,
+    remote_description TEXT,
+    remote_genre TEXT AS List<String>,
+    remote_update_strategy INTEGER AS UpdateStrategy NOT NULL,
+    remote_initialized INTEGER AS Boolean NOT NULL,
+    user_favorited_at INTEGER,
+    user_note TEXT NOT NULL,
+    user_cover_last_modified INTEGER NOT NULL,
+    user_chapter_flags INTEGER NOT NULL,
+    user_reader_flags INTEGER NOT NULL,
+    state_last_update INTEGER,
+    state_next_update INTEGER,
+    state_calculate_interval INTEGER NOT NULL,
+    UNIQUE (source_id, remote_url) ON CONFLICT IGNORE
+);
