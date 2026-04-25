@@ -1,0 +1,45 @@
+CREATE TABLE category(
+    id INTEGER NOT NULL PRIMARY KEY,
+    name TEXT NOT NULL UNIQUE,
+    `order` INTEGER NOT NULL UNIQUE,
+    flags INTEGER NOT NULL
+);
+
+get:
+SELECT *
+FROM category
+WHERE id = :id;
+
+getAll:
+SELECT *
+FROM category
+ORDER BY `order`;
+
+getAllForManga:
+SELECT *
+FROM categories C
+JOIN mangas_categories MC
+ON C._id = MC.category_id
+WHERE MC.manga_id = :mangaId;
+
+insert {
+    INSERT INTO category(name, `order`, flags)
+    VALUES (:name, :order, :flags);
+
+    SELECT last_insert_rowid();
+}
+
+delete:
+DELETE FROM category
+WHERE id = :id;
+
+update:
+UPDATE category
+SET name = coalesce(:name, name),
+    `order` = coalesce(:order, `order`),
+    flags = coalesce(:flags, flags)
+WHERE id = :id;
+
+updateFlagsForAll:
+UPDATE category SET
+flags = :flags;

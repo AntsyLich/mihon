@@ -14,6 +14,7 @@ class CategoryRepositoryImpl(
 ) : CategoryRepository {
 
     override suspend fun get(id: Long): Category? {
+
         return database.categoriesQueries
             .getCategory(id, ::mapCategory)
             .awaitAsOneOrNull()

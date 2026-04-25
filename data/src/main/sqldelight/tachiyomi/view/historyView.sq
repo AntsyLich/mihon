@@ -1,6 +1,6 @@
 CREATE VIEW historyView AS
 SELECT
-    history._id AS id,
+    history.id AS id,
     mangas._id AS mangaId,
     chapters._id AS chapterId,
     mangas.title,

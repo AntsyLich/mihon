@@ -1,0 +1,21 @@
+import kotlin.Boolean;
+
+CREATE TABLE tracking_entry(
+    id INTEGER NOT NULL PRIMARY KEY,
+    manga_id INTEGER NOT NULL,
+    tracker_id INTEGER NOT NULL,
+    remote_id INTEGER NOT NULL,
+    remote_url TEXT NOT NULL,
+    remote_library_id INTEGER,
+    remote_title TEXT NOT NULL,
+    remote_total_chapters REAL NOT NULL,
+    user_status INTEGER NOT NULL,
+    user_chapter_progress REAL NOT NULL,
+    user_score REAL NOT NULL,
+    user_start_date INTEGER NOT NULL,
+    user_finish_date INTEGER NOT NULL,
+    user_private INTEGER AS Boolean NOT NULL,
+    UNIQUE (manga_id, tracker_id),
+    FOREIGN KEY (manga_id) REFERENCES manga(id)
+    ON DELETE CASCADE
+);

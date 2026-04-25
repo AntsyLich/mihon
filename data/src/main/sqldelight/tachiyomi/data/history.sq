@@ -1,11 +1,11 @@
 import java.util.Date;
 
 CREATE TABLE history(
-    _id INTEGER NOT NULL PRIMARY KEY,
+    id INTEGER NOT NULL PRIMARY KEY,
     chapter_id INTEGER NOT NULL UNIQUE,
     last_read INTEGER AS Date,
     time_read INTEGER NOT NULL,
-    FOREIGN KEY(chapter_id) REFERENCES chapters (_id)
+    FOREIGN KEY (chapter_id) REFERENCES chapter(id)
     ON DELETE CASCADE
 );
 
@@ -14,7 +14,7 @@ CREATE INDEX idx_history_last_read ON history(last_read);
 
 getHistoryByMangaId:
 SELECT
-H._id,
+H.id,
 H.chapter_id,
 H.last_read,
 H.time_read
@@ -25,7 +25,7 @@ WHERE C.manga_id = :mangaId AND C._id = H.chapter_id;
 
 getHistoryByChapterUrl:
 SELECT
-H._id,
+H.id,
 H.chapter_id,
 H.last_read,
 H.time_read
@@ -37,13 +37,13 @@ WHERE C.url = :chapterUrl AND C._id = H.chapter_id;
 resetHistoryById:
 UPDATE history
 SET last_read = 0
-WHERE _id = :historyId;
+WHERE id = :historyId;
 
 resetHistoryByMangaId:
 UPDATE history
 SET last_read = 0
-WHERE _id IN (
-    SELECT H._id
+WHERE id IN (
+    SELECT H.id
     FROM mangas M
     INNER JOIN chapters C
     ON M._id = C.manga_id

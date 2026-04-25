@@ -1,0 +1,8 @@
+CREATE TABLE extension_repo(
+    index_url TEXT NOT NULL PRIMARY KEY,
+    name TEXT NOT NULL,
+    description TEXT,
+    signing_key TEXT NOT NULL,
+    website TEXT,
+    discord TEXT
+);
