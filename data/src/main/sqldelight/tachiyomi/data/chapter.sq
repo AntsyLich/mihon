@@ -18,3 +18,69 @@ CREATE TABLE chapter(
     FOREIGN KEY (manga_id) REFERENCES manga(id)
     ON DELETE CASCADE
 );
+
+get:
+SELECT *
+FROM chapter
+WHERE id = :id;
+
+getChaptersForManga:
+SELECT C.*
+FROM chapter C
+LEFT JOIN scanlator_filter SF
+ON C.manga_id = SF.manga_id
+AND C.remote_scanlator = SF.scanlator
+WHERE C.manga_id = :mangaId
+AND (
+    :applyScanlatorFilter = 0
+    OR SF.scanlator IS NULL
+);
+
+getScanlatorsForManga:
+SELECT DISTINCT remote_scanlator
+FROM chapter
+WHERE manga_id = :mangaId;
+
+getBookmarkedChaptersForManga:
+SELECT *
+FROM chapter
+WHERE user_bookmark
+AND manga_id = :mangaId;
+
+getChapterForMangaByUrl:
+SELECT *
+FROM chapter
+WHERE remote_url = :url
+AND manga_id = :mangaId;
+
+delete:
+DELETE FROM chapter
+WHERE id IN :chapterIds;
+
+upsert {
+    INSERT INTO chapter(manga_id, remote_url, remote_name, remote_chapter_number, remote_scanlator, remote_date_upload, remote_updated_at, user_read, user_bookmark, user_last_page_read, state_source_order, state_date_fetch)
+    VALUES (:mangaId, :url, :name, :chapterNumber, :scanlator, :dateUpload, strftime('%s', 'now'), :read, :bookmark, :lastPageRead, :sourceOrder, strftime('%s', 'now'))
+    ON CONFLICT (manga_id, remote_url) DO UPDATE
+    SET
+        remote_name = :name,
+        remote_chapter_number = :chapterNumber,
+        remote_scanlator = :scanlator,
+        remote_date_upload = :dateUpload,
+        remote_updated_at = strftime('%s', 'now'),
+        user_read = :read,
+        user_bookmark = :bookmark,
+        user_last_page_read = :lastPageRead,
+        state_source_order = :sourceOrder,
+        state_date_fetch = strftime('%s', 'now')
+    WHERE manga_id = :mangaId AND remote_url = :url;
+
+    SELECT id FROM chapter WHERE manga_id = :mangaId AND remote_url = :url;
+}
+
+partialUpdate:
+UPDATE chapter
+SET user_read = coalesce(:read, user_read),
+    user_bookmark = coalesce(:bookmark, user_bookmark),
+    user_last_page_read = coalesce(:lastPageRead, user_last_page_read),
+    state_date_fetch = coalesce(:dateFetch, state_date_fetch)
+WHERE id = :id;

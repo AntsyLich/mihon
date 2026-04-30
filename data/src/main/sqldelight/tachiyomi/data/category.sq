@@ -5,6 +5,17 @@ CREATE TABLE category(
     flags INTEGER NOT NULL
 );
 
+-- Insert system category
+INSERT OR IGNORE INTO categories(_id, name, sort, flags) VALUES (0, "", -1, 0);
+-- Disallow deletion of default category
+CREATE TRIGGER IF NOT EXISTS system_category_delete_trigger BEFORE DELETE
+ON categories
+BEGIN SELECT CASE
+    WHEN old._id <= 0 THEN
+        RAISE(ABORT, "System category can't be deleted")
+    END;
+END;
+
 get:
 SELECT *
 FROM category
@@ -16,18 +27,15 @@ FROM category
 ORDER BY `order`;
 
 getAllForManga:
-SELECT *
-FROM categories C
-JOIN mangas_categories MC
-ON C._id = MC.category_id
+SELECT C.*
+FROM category C
+JOIN manga_category MC
+ON C.id = MC.category_id
 WHERE MC.manga_id = :mangaId;
 
-insert {
-    INSERT INTO category(name, `order`, flags)
-    VALUES (:name, :order, :flags);
-
-    SELECT last_insert_rowid();
-}
+insert:
+INSERT INTO category(name, `order`, flags)
+VALUES (:name, :order, :flags);
 
 delete:
 DELETE FROM category

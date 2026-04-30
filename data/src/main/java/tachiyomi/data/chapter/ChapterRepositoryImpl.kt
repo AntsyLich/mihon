@@ -4,6 +4,7 @@ import app.cash.sqldelight.async.coroutines.awaitAsList
 import app.cash.sqldelight.async.coroutines.awaitAsOne
 import app.cash.sqldelight.async.coroutines.awaitAsOneOrNull
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.map
 import logcat.LogPriority
 import tachiyomi.core.common.util.lang.toLong
 import tachiyomi.core.common.util.system.logcat
@@ -55,21 +56,12 @@ class ChapterRepositoryImpl(
     private suspend fun partialUpdate(vararg chapterUpdates: ChapterUpdate) {
         database.transaction {
             chapterUpdates.forEach { chapterUpdate ->
-                database.chaptersQueries.update(
-                    mangaId = chapterUpdate.mangaId,
-                    url = chapterUpdate.url,
-                    name = chapterUpdate.name,
-                    scanlator = chapterUpdate.scanlator,
+                database.chapterQueries.partialUpdate(
+                    id = chapterUpdate.id,
                     read = chapterUpdate.read,
                     bookmark = chapterUpdate.bookmark,
                     lastPageRead = chapterUpdate.lastPageRead,
-                    chapterNumber = chapterUpdate.chapterNumber,
-                    sourceOrder = chapterUpdate.sourceOrder,
                     dateFetch = chapterUpdate.dateFetch,
-                    dateUpload = chapterUpdate.dateUpload,
-                    chapterId = chapterUpdate.id,
-                    version = chapterUpdate.version,
-                    isSyncing = 0,
                 )
             }
         }
@@ -77,51 +69,53 @@ class ChapterRepositoryImpl(
 
     override suspend fun removeChaptersWithIds(chapterIds: List<Long>) {
         try {
-            database.chaptersQueries.removeChaptersWithIds(chapterIds)
+            database.chapterQueries.delete(chapterIds)
         } catch (e: Exception) {
             logcat(LogPriority.ERROR, e)
         }
     }
 
     override suspend fun getChapterByMangaId(mangaId: Long, applyScanlatorFilter: Boolean): List<Chapter> {
-        return database.chaptersQueries
-            .getChaptersByMangaId(mangaId, applyScanlatorFilter.toLong(), ::mapChapter)
+        return database.chapterQueries
+            .getChaptersForManga(mangaId, applyScanlatorFilter.toLong(), ::mapChapter)
             .awaitAsList()
     }
 
     override suspend fun getScanlatorsByMangaId(mangaId: Long): List<String> {
-        return database.chaptersQueries
-            .getScanlatorsByMangaId(mangaId) { it.orEmpty() }
+        return database.chapterQueries
+            .getScanlatorsForManga(mangaId) { it.orEmpty() }
             .awaitAsList()
+            .filter(String::isNotEmpty)
     }
 
     override fun getScanlatorsByMangaIdAsFlow(mangaId: Long): Flow<List<String>> {
-        return database.chaptersQueries
-            .getScanlatorsByMangaId(mangaId) { it.orEmpty() }
+        return database.chapterQueries
+            .getScanlatorsForManga(mangaId) { it.orEmpty() }
             .subscribeToList()
+            .map { it.filter(String::isNotEmpty) }
     }
 
     override suspend fun getBookmarkedChaptersByMangaId(mangaId: Long): List<Chapter> {
-        return database.chaptersQueries
-            .getBookmarkedChaptersByMangaId(mangaId, ::mapChapter)
+        return database.chapterQueries
+            .getBookmarkedChaptersForManga(mangaId, ::mapChapter)
             .awaitAsList()
     }
 
     override suspend fun getChapterById(id: Long): Chapter? {
-        return database.chaptersQueries
-            .getChapterById(id, ::mapChapter)
+        return database.chapterQueries
+            .get(id, ::mapChapter)
             .awaitAsOneOrNull()
     }
 
     override suspend fun getChapterByMangaIdAsFlow(mangaId: Long, applyScanlatorFilter: Boolean): Flow<List<Chapter>> {
-        return database.chaptersQueries
-            .getChaptersByMangaId(mangaId, applyScanlatorFilter.toLong(), ::mapChapter)
+        return database.chapterQueries
+            .getChaptersForManga(mangaId, applyScanlatorFilter.toLong(), ::mapChapter)
             .subscribeToList()
     }
 
     override suspend fun getChapterByUrlAndMangaId(url: String, mangaId: Long): Chapter? {
-        return database.chaptersQueries
-            .getChapterByUrlAndMangaId(url, mangaId, ::mapChapter)
+        return database.chapterQueries
+            .getChapterForMangaByUrl(url, mangaId, ::mapChapter)
             .awaitAsOneOrNull()
     }
 

@@ -3,8 +3,7 @@ import kotlin.Boolean;
 CREATE TABLE scanlator_filter(
     id INTEGER NOT NULL PRIMARY KEY,
     manga_id INTEGER NOT NULL,
-    scanlator TEXT,
-    priority INTEGER NOT NULL,
+    scanlator TEXT NOT NULL,
     excluded INTEGER AS Boolean NOT NULL,
     FOREIGN KEY (manga_id) REFERENCES manga(id)
     ON DELETE CASCADE
@@ -19,6 +18,6 @@ CREATE UNIQUE INDEX scanlator_filter_uidx_scanlator_absent
 ON scanlator_filter(id) WHERE scanlator IS NULL;
 
 upsert:
-INSERT INTO scanlator_filter(manga_id, scanlator, priority, excluded)
-VALUES (:mangaId, :scanlator, max(priority) + 1, 0);
+INSERT INTO scanlator_filter(manga_id, scanlator, excluded)
+VALUES (:mangaId, :scanlator, 0);
 

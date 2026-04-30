@@ -147,93 +147,48 @@ class MangaRestorer(
     }
 
     private suspend fun restoreChapters(manga: Manga, backupChapters: List<BackupChapter>) {
-        val dbChaptersByUrl = getChaptersByMangaId.await(manga.id)
+        val dbChaptersByUrl = getChaptersByMangaId
+            .await(manga.id)
             .associateBy { it.url }
 
-        val (existingChapters, newChapters) = backupChapters
-            .mapNotNull {
-                val chapter = it.toChapterImpl().copy(mangaId = manga.id)
-
-                val dbChapter = dbChaptersByUrl[chapter.url]
-                    ?: // New chapter
-                    return@mapNotNull chapter
-
-                if (chapter.forComparison() == dbChapter.forComparison()) {
-                    // Same state; skip
-                    return@mapNotNull null
+        database.transaction {
+            backupChapters.forEach { backupChapter ->
+                val dbChapter = dbChaptersByUrl[backupChapter.url]
+                if (backupChapter.toChapterImpl().forComparison() == dbChapter?.forComparison()) {
+                    return@forEach
                 }
 
-                // Update to an existing chapter
-                var updatedChapter = chapter
-                    .copyFrom(dbChapter)
-                    .copy(
+                if (dbChapter == null) {
+                    database.chapterQueries.upsert(
+                        mangaId = manga.id,
+                        url = backupChapter.url,
+                        name = backupChapter.name,
+                        chapterNumber = backupChapter.chapterNumber.toDouble(),
+                        scanlator = backupChapter.scanlator,
+                        dateUpload = backupChapter.dateUpload,
+                        read = backupChapter.read,
+                        bookmark = backupChapter.bookmark,
+                        lastPageRead = backupChapter.lastPageRead,
+                        sourceOrder = backupChapter.sourceOrder
+                    )
+                } else {
+                    val read = backupChapter.read || dbChapter.read
+                    database.chapterQueries.partialUpdate(
                         id = dbChapter.id,
-                        bookmark = chapter.bookmark || dbChapter.bookmark,
-                    )
-                if (dbChapter.read && !updatedChapter.read) {
-                    updatedChapter = updatedChapter.copy(
-                        read = true,
-                        lastPageRead = dbChapter.lastPageRead,
-                    )
-                } else if (updatedChapter.lastPageRead == 0L && dbChapter.lastPageRead != 0L) {
-                    updatedChapter = updatedChapter.copy(
-                        lastPageRead = dbChapter.lastPageRead,
+                        read = read,
+                        bookmark = backupChapter.bookmark || dbChapter.bookmark,
+                        lastPageRead = if (read) 0L else max(backupChapter.lastPageRead, dbChapter.lastPageRead),
+                        dateFetch = null,
                     )
                 }
-                updatedChapter
-            }
-            .partition { it.id > 0 }
 
-        insertNewChapters(newChapters)
-        updateExistingChapters(existingChapters)
+
+            }
+        }
     }
 
     private fun Chapter.forComparison() =
         this.copy(id = 0L, mangaId = 0L, dateFetch = 0L, dateUpload = 0L, lastModifiedAt = 0L, version = 0L)
-
-    private suspend fun insertNewChapters(chapters: List<Chapter>) {
-        database.transaction {
-            chapters.forEach { chapter ->
-                database.chaptersQueries.insert(
-                    chapter.mangaId,
-                    chapter.url,
-                    chapter.name,
-                    chapter.scanlator,
-                    chapter.read,
-                    chapter.bookmark,
-                    chapter.lastPageRead,
-                    chapter.chapterNumber,
-                    chapter.sourceOrder,
-                    chapter.dateFetch,
-                    chapter.dateUpload,
-                    chapter.version,
-                )
-            }
-        }
-    }
-
-    private suspend fun updateExistingChapters(chapters: List<Chapter>) {
-        database.transaction {
-            chapters.forEach { chapter ->
-                database.chaptersQueries.update(
-                    mangaId = null,
-                    url = null,
-                    name = null,
-                    scanlator = null,
-                    read = chapter.read,
-                    bookmark = chapter.bookmark,
-                    lastPageRead = chapter.lastPageRead,
-                    chapterNumber = null,
-                    sourceOrder = null,
-                    dateFetch = null,
-                    dateUpload = null,
-                    chapterId = chapter.id,
-                    version = chapter.version,
-                    isSyncing = 0,
-                )
-            }
-        }
-    }
 
     /**
      * Inserts manga and returns id
@@ -279,7 +234,7 @@ class MangaRestorer(
         restoreCategories(manga, categories, backupCategories)
         restoreChapters(manga, chapters)
         restoreTracking(manga, tracks)
-        restoreHistory(history)
+        restoreHistory(manga, history)
         restoreExcludedScanlators(manga, excludedScanlators)
         updateManga.awaitUpdateFetchInterval(manga, now, currentFetchWindow)
         return manga
@@ -319,7 +274,7 @@ class MangaRestorer(
         }
     }
 
-    private suspend fun restoreHistory(backupHistory: List<BackupHistory>) {
+    private suspend fun restoreHistory(manga: Manga, backupHistory: List<BackupHistory>) {
         val toUpdate = backupHistory.mapNotNull { history ->
             val dbHistory = database.historyQueries
                 .getHistoryByChapterUrl(history.url)
@@ -327,15 +282,15 @@ class MangaRestorer(
             val item = history.getHistoryImpl()
 
             if (dbHistory == null) {
-                val chapter = database.chaptersQueries
-                    .getChapterByUrl(history.url)
+                val chapter = database.chapterQueries
+                    .getChapterForMangaByUrl(url = history.url, mangaId = manga.id)
                     .awaitAsOneOrNull()
                 return@mapNotNull if (chapter == null) {
                     // Chapter doesn't exist; skip
                     null
                 } else {
                     // New history entry
-                    item.copy(chapterId = chapter._id)
+                    item.copy(chapterId = chapter.id)
                 }
             }
 

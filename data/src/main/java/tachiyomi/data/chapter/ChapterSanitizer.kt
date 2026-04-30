@@ -2,9 +2,9 @@ package tachiyomi.data.chapter
 
 object ChapterSanitizer {
 
-    fun String.sanitize(title: String): String {
-        return trim()
-            .removePrefix(title)
+    fun sanitize(chapterName: String, mangaTitle: String): String {
+        return chapterName.trim()
+            .removePrefix(mangaTitle)
             .trim(*CHAPTER_TRIM_CHARS)
     }
 

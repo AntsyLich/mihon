@@ -41,31 +41,31 @@ class SyncChaptersWithSource(
     /**
      * Method to synchronize db chapters with source ones
      *
-     * @param rawSourceChapters the chapters from the source.
+     * @param sourceChapters the chapters from the source.
      * @param manga the manga the chapters belong to.
      * @param source the source the manga belongs to.
      * @return Newly added chapters
      */
     suspend fun await(
-        rawSourceChapters: List<SChapter>,
+        sourceChapters: List<SChapter>,
         manga: Manga,
         source: Source,
         manualFetch: Boolean = false,
         fetchWindow: Pair<Long, Long> = Pair(0, 0),
     ): List<Chapter> {
-        if (rawSourceChapters.isEmpty() && !source.isLocal()) {
+        if (sourceChapters.isEmpty() && !source.isLocal()) {
             throw NoChaptersException()
         }
 
         val now = ZonedDateTime.now()
         val nowMillis = now.toInstant().toEpochMilli()
 
-        val sourceChapters = rawSourceChapters
+        val remoteChapters = sourceChapters
             .distinctBy { it.url }
             .mapIndexed { i, sChapter ->
                 Chapter.create()
                     .copyFromSChapter(sChapter)
-                    .copy(name = with(ChapterSanitizer) { sChapter.name.sanitize(manga.title) })
+                    .copy(name = ChapterSanitizer.sanitize(sChapter.name, manga.title))
                     .copy(mangaId = manga.id, sourceOrder = i.toLong())
             }
 
@@ -74,7 +74,7 @@ class SyncChaptersWithSource(
         val newChapters = mutableListOf<Chapter>()
         val updatedChapters = mutableListOf<Chapter>()
         val removedChapters = dbChapters.filterNot { dbChapter ->
-            sourceChapters.any { sourceChapter ->
+            remoteChapters.any { sourceChapter ->
                 dbChapter.url == sourceChapter.url
             }
         }
@@ -83,7 +83,7 @@ class SyncChaptersWithSource(
         // to a higher value than newer chapters
         var maxSeenUploadDate = 0L
 
-        for (sourceChapter in sourceChapters) {
+        for (sourceChapter in remoteChapters) {
             var chapter = sourceChapter
 
             // Update metadata from source if necessary.

@@ -14,50 +14,55 @@ class CategoryRepositoryImpl(
 ) : CategoryRepository {
 
     override suspend fun get(id: Long): Category? {
-
-        return database.categoriesQueries
-            .getCategory(id, ::mapCategory)
+        return database.categoryQueries
+            .get(id, ::mapCategory)
             .awaitAsOneOrNull()
     }
 
     override suspend fun getAll(): List<Category> {
-        return database.categoriesQueries
-            .getCategories(::mapCategory)
+        return database.categoryQueries
+            .getAll(::mapCategory)
             .awaitAsList()
     }
 
     override fun getAllAsFlow(): Flow<List<Category>> {
-        return database.categoriesQueries
-            .getCategories(::mapCategory)
+        return database.categoryQueries
+            .getAll(::mapCategory)
             .subscribeToList()
     }
 
-    override suspend fun getCategoriesByMangaId(mangaId: Long): List<Category> {
-        return database.categoriesQueries
-            .getCategoriesByMangaId(mangaId, ::mapCategory)
+    override suspend fun getAllForManga(mangaId: Long): List<Category> {
+        return database.categoryQueries
+            .getAllForManga(mangaId, ::mapCategory)
             .awaitAsList()
     }
 
-    override fun getCategoriesByMangaIdAsFlow(mangaId: Long): Flow<List<Category>> {
-        return database.categoriesQueries
-            .getCategoriesByMangaId(mangaId, ::mapCategory)
+    override fun getAllForMangaAsFlow(mangaId: Long): Flow<List<Category>> {
+        return database.categoryQueries
+            .getAllForManga(mangaId, ::mapCategory)
             .subscribeToList()
     }
 
     override suspend fun insert(category: Category) {
-        database.categoriesQueries.insert(
+        database.categoryQueries.insert(
             name = category.name,
             order = category.order,
             flags = category.flags,
         )
     }
 
+    override suspend fun insert(categories: List<Category>) {
+        database.transaction {
+            categories.forEach { insert(it) }
+        }
+    }
+
     override suspend fun updatePartial(update: CategoryUpdate) {
-        database.categoriesQueries.update(
+        database.categoryQueries.update(
+            id = update.id,
             name = update.name,
             order = update.order,
             flags = update.flags,
-            categoryId = update.id,
         )
     }
 
@@ -67,12 +72,12 @@ class CategoryRepositoryImpl(
         }
     }
 
-    override suspend fun updateAllFlags(flags: Long?) {
-        database.categoriesQueries.updateAllFlags(flags)
+    override suspend fun updateFlagsForAll(flags: Long) {
+        database.categoryQueries.updateFlagsForAll(flags)
     }
 
-    override suspend fun delete(categoryId: Long) {
-        database.categoriesQueries.delete(categoryId = categoryId)
+    override suspend fun delete(id: Long) {
+        database.categoryQueries.delete(id = id)
     }
 
     private fun mapCategory(

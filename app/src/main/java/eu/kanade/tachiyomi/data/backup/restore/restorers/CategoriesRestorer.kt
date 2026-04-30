@@ -1,6 +1,5 @@
 package eu.kanade.tachiyomi.data.backup.restore.restorers
 
-import app.cash.sqldelight.async.coroutines.awaitAsOne
 import eu.kanade.tachiyomi.data.backup.models.BackupCategory
 import tachiyomi.data.Database
 import tachiyomi.domain.category.interactor.GetCategories
@@ -20,23 +19,22 @@ class CategoriesRestorer(
             val dbCategoriesByName = dbCategories.associateBy { it.name }
             var nextOrder = dbCategories.maxOfOrNull { it.order }?.plus(1) ?: 0
 
-            val categories = backupCategories
+            val backupCategoriesFlags = backupCategories
                 .sortedBy { it.order }
                 .map {
                     val dbCategory = dbCategoriesByName[it.name]
-                    if (dbCategory != null) return@map dbCategory
+                    if (dbCategory != null) return@map dbCategory.flags
                     val order = nextOrder++
-                    database.categoriesQueries
-                        .insert(it.name, order, it.flags)
-                        .awaitAsOne()
-                        .let { id -> it.toCategory(id).copy(order = order) }
+                    database.categoryQueries.insert(it.name, order, it.flags)
+                    it.flags
                 }
 
-            libraryPreferences.categorizedDisplaySettings.set(
-                (dbCategories + categories)
-                    .distinctBy { it.flags }
-                    .size > 1,
-            )
+            val categorizedDisplaySettings = dbCategories.map { it.flags }
+                .plus(backupCategoriesFlags)
+                .distinct()
+                .size > 1
+
+            libraryPreferences.categorizedDisplaySettings.set(categorizedDisplaySettings)
         }
     }
 }
